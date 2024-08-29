@@ -58,3 +58,5 @@ class TikTokIOConnection {
         this.socket.on(eventName, eventHandler);
     }
 }
+
+export default TikTokIOConnection;
