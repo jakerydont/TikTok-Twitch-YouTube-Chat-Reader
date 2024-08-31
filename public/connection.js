@@ -2,10 +2,11 @@
  * Wrapper for client-side TikTok connection over Socket.IO
  * With reconnect functionality.
  */
-class TikTokIOConnection {
+class connection {
     constructor(backendUrl) {
         this.socket = io(backendUrl);
         this.uniqueId = null;
+        this.youTubeLiveVideoId = null;
         this.options = null;
 
         this.socket.on('connect', () => {
@@ -14,6 +15,10 @@ class TikTokIOConnection {
             // Reconnect to streamer if uniqueId already set
             if (this.uniqueId) {
                 this.setUniqueId();
+            }
+
+            if (this.youTubeLiveVideoId) {
+                this.setYouTubeLiveVideoId();
             }
         })
 
@@ -50,8 +55,28 @@ class TikTokIOConnection {
         })
     }
 
+    youtubeConnect(youTubeLiveVideoId, options) {
+        this.youTubeLiveVideoId = youTubeLiveVideoId;
+        this.options = options || {};
+
+        this.setYouTubeLiveVideoId();
+
+        return new Promise((resolve, reject) => {
+            this.socket.once('youTubeConnected', resolve);
+            this.socket.once('youTubeDisconnected', reject);
+
+            setTimeout(() => {
+                reject('Connection Timeout');
+            }, 15000)
+        })
+    }
+
     setUniqueId() {
         this.socket.emit('setUniqueId', this.uniqueId, this.options);
+    }
+
+    setYouTubeLiveVideoId() {
+        this.socket.emit('setYouTubeLiveVideoId', this.youTubeLiveVideoId, this.options);
     }
 
     on(eventName, eventHandler) {
@@ -59,4 +84,4 @@ class TikTokIOConnection {
     }
 }
 
-export default TikTokIOConnection;
+export default connection;

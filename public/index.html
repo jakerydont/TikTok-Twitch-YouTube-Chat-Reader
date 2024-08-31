@@ -15,7 +15,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script type="module"  src="app.js"></script>
-    <script>App();</script>
     <script>
         function generateOverlay() {
             let username = $('#uniqueIdInput').val();
@@ -41,18 +40,31 @@
 
     <div class="inputFields">
         <p>Enter the <b>@username</b> of a user who is currently live:</p>
-        <input type="text" id="uniqueIdInput">
-        <input type="button" id="connectButton" value="connect">
+        <input type="text" id="tiktokUniqueIdInput">
+        <input type="button" id="tiktokConnectButton" value="connect">
         <a href="#" onclick="generateOverlay()">Generate Overlay URL</a>
+
+        <p>YouTube:</p>
+        <input type="text" id="youTubeLiveVideoIdInput"  value="AoZGFSoRS0Q"/>
+        <input type="button" id="youTubeConnectButton" value="connect">
+        
     </div>
 
     <table class="splitstatetable">
         <tr>
             <td>
-                <pre id="stateText"></pre>
+                <pre id="tiktokStateText"></pre>
             </td>
             <td>
-                <div id="roomStats"></div>
+                <div id="tiktokRoomStats"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <pre id="youTubeStateText"></pre>
+            </td>
+            <td>
+                <div id="youTubeRoomStats"></div>
             </td>
         </tr>
     </table>

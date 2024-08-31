@@ -1,8 +1,8 @@
-import TikTokIOConnection from './TiktokIOConnection.js'
+import Connection from './connection.js'
 
 // This will use the demo backend if you open index.html locally via file://, otherwise your server will be used
 let backendUrl = location.protocol === 'file:' ? "https://tiktok-chat-reader.zerody.one/" : undefined;
-let connection = new TikTokIOConnection(backendUrl);
+let connection = new Connection(backendUrl);
 
 // Counter
 let viewerCount = 0;
@@ -13,60 +13,107 @@ let diamondsCount = 0;
 if (!window.settings) window.settings = {};
 
 $(document).ready(() => {
-    $('#connectButton').click(connect);
-    $('#uniqueIdInput').on('keyup', function (e) {
+    $('#tiktokConnectButton').click(tiktokConnect);
+    $('#tiktokUniqueIdInput').on('keyup', function (e) {
         if (e.key === 'Enter') {
-            connect();
+            tiktokConnect();
+        }
+    });
+        if (window.settings.username) tiktokConnect();
+
+    $('#youTubeConnectButton').click(youTubeConnect);
+    $('#youTubeLiveVideoIdInput').on('keyup', function (e) {
+        if (e.key === 'Enter') {
+            youTubeConnect();
         }
     });
 
-    if (window.settings.username) connect();
+
+    if(window.settings.youTubeLiveVideoId) youTubeConnect();
 })
 
-function connect() {
-    let uniqueId = window.settings.username || $('#uniqueIdInput').val();
-    if (uniqueId !== '') {
+function tiktokConnect() {
+    let tiktokUniqueId = window.settings.username || $('#tiktokUniqueIdInput').val();
+  
+    if ( tiktokUniqueId !== '' ) {
 
-        $('#stateText').text('Connecting...');
+        $('#tiktokStateText').text('Connecting...');
 
-        connection.connect(uniqueId, {
+        connection.tiktokConnect(tiktokUniqueId, {
             enableExtendedGiftInfo: true
         }).then(state => {
-            $('#stateText').text(`Connected to roomId ${state.roomId}`);
+            $('#tiktokStateText').text(`Connected to roomId ${state.roomId}`);
 
             // reset stats
             viewerCount = 0;
             likeCount = 0;
             diamondsCount = 0;
-            updateRoomStats();
+            updateTiktokRoomStats();
 
         }).catch(errorMessage => {
-            $('#stateText').text(errorMessage);
+            $('#tiktokStateText').text(errorMessage);
 
             // schedule next try if obs username set
             if (window.settings.username) {
                 setTimeout(() => {
-                    connect(window.settings.username);
+                    tiktokConnect(window.settings.username);
                 }, 30000);
             }
         })
 
     } else {
-        alert('no username entered');
+        alert('no tiktok username entered');
     }
 }
+
+function youTubeConnect() {
+    let youTubeLiveVideoId = window.settings.youTubeLiveVideoId || $('#youTubeLiveVideoIdInput').val();
+    if (  youTubeLiveVideoId !== '' ) {
+
+        $('#youTubeStateText').text('Connecting...');
+        connection.youtubeConnect(youTubeLiveVideoId, {
+            enableExtendedGiftInfo: true
+        }).then(state => {
+            $('#youTubeStateText').text(`Connected to chatId ${state.chatId}`);
+
+            // reset stats
+            viewerCount = 0;
+            likeCount = 0;
+            diamondsCount = 0;
+            updateYouTubeRoomStats();
+
+        }).catch(errorMessage => {
+            $('#youTubeStateText').text(errorMessage);
+
+            // schedule next try if obs username set
+            if (window.settings.youTubeLiveVideoId) {
+                setTimeout(() => {
+                    youTubeConnect(window.settings.youTubeLiveVideoId);
+                }, 30000);
+            }
+        })
+
+    } else {
+        alert('no youtube username entered');
+    }
+}
+
 
 // Prevent Cross site scripting (XSS)
 function sanitize(text) {
     return text.replace(/</g, '&lt;')
 }
 
-function updateRoomStats() {
-    $('#roomStats').html(`Viewers: <b>${viewerCount.toLocaleString()}</b> Likes: <b>${likeCount.toLocaleString()}</b> Earned Diamonds: <b>${diamondsCount.toLocaleString()}</b>`)
+function updateTiktokRoomStats() {
+    $('#tiktokRoomStats').html(`Viewers: <b>${viewerCount.toLocaleString()}</b> Likes: <b>${likeCount.toLocaleString()}</b> Earned Diamonds: <b>${diamondsCount.toLocaleString()}</b>`)
 }
 
+function updateYouTubeRoomStats() {
+    console.warn('updateYouTubeRoomStats() not implemented');
+    //$('#youTubeRoomStats').html(`Viewers: <b>${viewerCount.toLocaleString()}</b> Likes: <b>${likeCount.toLocaleString()}</b> Earned Diamonds: <b>${diamondsCount.toLocaleString()}</b>`)
+}
 function generateUsernameLink(data) {
-    return `<a class="usernamelink" href="https://www.tiktok.com/@${data.uniqueId}" target="_blank">${data.uniqueId}</a>`;
+    return `<a class="usernamelink" href="https://www.tiktok.com/@${data.tiktokUniqueId}" target="_blank">${data.tiktokUniqueId}</a>`;
 }
 
 function isPendingStreak(data) {
@@ -76,7 +123,11 @@ function isPendingStreak(data) {
 /**
  * Add a new message to the chat container
  */
-function addChatItem(color, data, text, summarize) {
+function addChatItem(color, data, originText, summarize) {
+    let text = originText;
+    if (data.source === "youtube") {
+        text = data.message
+    }
     let container = location.href.includes('obs.html') ? $('.eventcontainer') : $('.chatcontainer');
 
     if (container.find('div').length > 500) {
@@ -153,7 +204,7 @@ function addGiftItem(data) {
 connection.on('roomUser', (msg) => {
     if (typeof msg.viewerCount === 'number') {
         viewerCount = msg.viewerCount;
-        updateRoomStats();
+        updateTiktokRoomStats();
     }
 })
 
@@ -161,7 +212,7 @@ connection.on('roomUser', (msg) => {
 connection.on('like', (msg) => {
     if (typeof msg.totalLikeCount === 'number') {
         likeCount = msg.totalLikeCount;
-        updateRoomStats();
+        updateTiktokRoomStats();
     }
 
     if (window.settings.showLikes === "0") return;
@@ -189,17 +240,17 @@ connection.on('member', (msg) => {
 })
 
 // New chat comment received
-connection.on('chat', (msg) => {
+connection.on('chat', (data) => {
     if (window.settings.showChats === "0") return;
 
-    addChatItem('', msg, msg.comment);
+    addChatItem('', data, data.comment);
 })
 
 // New gift received
 connection.on('gift', (data) => {
     if (!isPendingStreak(data) && data.diamondCount > 0) {
         diamondsCount += (data.diamondCount * data.repeatCount);
-        updateRoomStats();
+        updateTiktokRoomStats();
     }
 
     if (window.settings.showGifts === "0") return;
@@ -216,12 +267,12 @@ connection.on('social', (data) => {
 })
 
 connection.on('streamEnd', () => {
-    $('#stateText').text('Stream ended.');
+    $('#tiktokStateText').text('Stream ended.');
 
     // schedule next try if obs username set
     if (window.settings.username) {
         setTimeout(() => {
-            connect(window.settings.username);
+            tiktokConnect(window.settings.username);
         }, 30000);
     }
 })
