@@ -39,7 +39,7 @@ function tiktokConnect() {
 
         $('#tiktokStateText').text('Connecting...');
 
-        connection.tiktokConnect(tiktokUniqueId, {
+        connection.connect(tiktokUniqueId, {
             enableExtendedGiftInfo: true
         }).then(state => {
             $('#tiktokStateText').text(`Connected to roomId ${state.roomId}`);
@@ -112,8 +112,13 @@ function updateYouTubeRoomStats() {
     console.warn('updateYouTubeRoomStats() not implemented');
     //$('#youTubeRoomStats').html(`Viewers: <b>${viewerCount.toLocaleString()}</b> Likes: <b>${likeCount.toLocaleString()}</b> Earned Diamonds: <b>${diamondsCount.toLocaleString()}</b>`)
 }
+
 function generateUsernameLink(data) {
-    return `<a class="usernamelink" href="https://www.tiktok.com/@${data.tiktokUniqueId}" target="_blank">${data.tiktokUniqueId}</a>`;
+    return `TIKTOK <a class="usernamelink" href="https://www.tiktok.com/@${data.uniqueId}" target="_blank">${data.uniqueId}</a>`;
+}
+
+function generateYouTubeUsernameLink(data) {
+    return `YOUTUBE <a class="usernamelink" href="https://www.youtube.com/@${data.authorChannelName}" target="_blank">${data.authorChannelName}</a>`;
 }
 
 function isPendingStreak(data) {
@@ -123,10 +128,17 @@ function isPendingStreak(data) {
 /**
  * Add a new message to the chat container
  */
-function addChatItem(color, data, originText, summarize) {
+function addChatItem(originColor, data, originText, summarize) {
     let text = originText;
+    let color = originColor;
+    let usernameLink;
     if (data.source === "youtube") {
-        text = data.message
+        text = data.message;
+        //color = 'red';
+        usernameLink = generateYouTubeUsernameLink(data);
+    } else {
+        data.source = "tiktok"
+        usernameLink = generateUsernameLink(data);
     }
     let container = location.href.includes('obs.html') ? $('.eventcontainer') : $('.chatcontainer');
 
@@ -140,7 +152,7 @@ function addChatItem(color, data, originText, summarize) {
         <div class=${summarize ? 'temporary' : 'static'}>
             <img class="miniprofilepicture" src="${data.profilePictureUrl}">
             <span>
-                <b>${generateUsernameLink(data)}:</b> 
+                <b>${usernameLink}:</b> 
                 <span style="color:${color}">${sanitize(text)}</span>
             </span>
         </div>

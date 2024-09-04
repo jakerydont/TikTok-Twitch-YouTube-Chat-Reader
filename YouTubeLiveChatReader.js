@@ -12,10 +12,11 @@ const ControlEvents = {
 };
 
 class YouTubeLiveChatReader extends EventEmitter {
-  constructor(youTubeLiveVideoId, config) {
+  constructor(uniqueId, config) {
     super();
-    this.youTubeLiveVideoId = youTubeLiveVideoId;
-    //this.uniqueId = uniqueId;
+    //this.youTubeLiveVideoId = uniqueId;
+
+    this.channelName = uniqueId;
     this.config = config;
 
     this.isConnected = false;
@@ -23,9 +24,9 @@ class YouTubeLiveChatReader extends EventEmitter {
 
     this.previousMessageIDs = [];
     this.pollInterval;
-    try{
+    try {
       this.pollInterval = config.youtube.pollInterval;
-    }  catch {
+    } catch {
       this.pollInterval = 5000
     }
 
@@ -35,30 +36,34 @@ class YouTubeLiveChatReader extends EventEmitter {
       this.emit(ControlEvents.DISCONNECTED);
       return;
     }
-    
+
   }
 
   async getState() {
-    return {"isConnected" : this.isConnected}
+    return { "isConnected": this.isConnected }
   }
 
   async connect() {
+
     if (!this.youTubeLiveVideoId) {
-      this.youTubeLiveVideoId = await this.getLiveVideoId();
-    }
-    if (!this.youTubeLiveVideoId) {
-      this.youTubeLiveVideoId = this.config.youtube.liveVideoId;
+      if (!this.channelId) { 
+        this.channelId = await this.getChannelId(this.channelName); 
+      }//UCkb6sUirgY1GVcRQ0ZkjUFA
+
+      this.youTubeLiveVideoId = await this.getLiveVideoId(this.channelId);
     }
 
-    this.chatId = await this.getChatId(this.youTubeLiveVideoId);
-    this.pollForMessages = setInterval(() => {
-      this.getChatMessages();
-    }, this.pollInterval);
-    this.isConnected = true;
+    if (this.youTubeLiveVideoId) {
+      this.chatId = await this.getChatId(this.youTubeLiveVideoId);
+      this.pollForMessages = setInterval(() => {
+        this.getChatMessages();
+      }, this.pollInterval);
+      this.isConnected = true;
+    }
     return {
-      "youTubeLiveVideoId" : this.youTubeLiveVideoId,
-      "chatId" :  this.chatId,
-      "isConnected" : this.isConnected
+      "youTubeLiveVideoId": this.youTubeLiveVideoId,
+      "chatId": this.chatId,
+      "isConnected": this.isConnected
     }
   }
 
@@ -67,11 +72,57 @@ class YouTubeLiveChatReader extends EventEmitter {
     this.pollForMessages = null;
   }
 
-  async getLiveVideoId() {
-    var res = await fetch(
-      //`https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastStatus=all&broadcastType=all&mine=true`
-      `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${this.config.youtube.channelId}&key=${secret.apiKey}`
-    );
+  async getChannelId(channelName) {
+    let error;
+    try {
+      var res = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${channelName}&key=${secret.apiKey}`
+      );
+
+      var data = await res.json();
+
+      if (!data.error) {
+        if (!data.items.length == 0) {
+          let channelId = data.items[0].id;
+          console.log(channelId);
+          return channelId;
+        } else {
+          error = 'Channel not found.';
+          throw error;
+        }
+      } else {
+        error = data.error.code + ': ' + data.error.errors[0].reason;
+        throw error;
+      }
+    } catch (e) {
+      console.log('Oops! ' + error);
+    }
+  }
+
+  async getLiveVideoId(channelId) {
+    let error;
+    try {
+      var res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&channelId=${channelId}&key=${secret.apiKey}`
+      );
+      var data = await res.json();
+
+      if (!data.error) {
+        if (!data.items.length == 0) {
+          let liveVideoId = data.items[0].id.videoId;
+          console.log(liveVideoId);
+          return liveVideoId;
+        } else {
+          error = 'Live video not found. Are they actually live?';
+          throw error;
+        }
+      } else {
+        error = data.error.code + ': ' + data.error.errors[0].reason;
+        throw error;
+      }
+    } catch (e) {
+      console.log('Oops! ' + error);
+    }
   }
 
   async getUserName(userId) {
@@ -126,8 +177,8 @@ class YouTubeLiveChatReader extends EventEmitter {
         error = data.error.code + ': ' + data.error.errors[0].reason;
         throw error;
       }
-    } catch(e) {
-      console.log('Oops! ' + error );
+    } catch (e) {
+      console.log('Oops! ' + error);
     }
   }
 
@@ -156,7 +207,12 @@ class YouTubeLiveChatReader extends EventEmitter {
                 let message = data.items[i].snippet.displayMessage;
                 printedMessagesCount++;
                 console.log("YOUTUBE: ", printedMessagesCount, authorChannelName, data.items[i].snippet.displayMessage);
-                this.emit("chat", {source,authorChannelId,authorChannelName,message});
+                this.emit("chat", {
+                  source,
+                  authorChannelId,
+                  authorChannelName,
+                  message
+                });
               }
               //console.log(data.items[i]);
             }
@@ -182,4 +238,4 @@ class YouTubeLiveChatReader extends EventEmitter {
 
 }
 
-module.exports= YouTubeLiveChatReader;
+module.exports = YouTubeLiveChatReader;

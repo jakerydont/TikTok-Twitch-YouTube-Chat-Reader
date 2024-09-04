@@ -61,7 +61,7 @@ class YouTubeConnectionWrapper extends EventEmitter {
             }
 
         }).catch((err) => {
-            this.log(`${isReconnect ? 'Reconnect' : 'Connection'} failed, ${err}`);
+                this.log(`${isReconnect ? 'Reconnect' : 'Connection'} failed, ${err}`);
 
             if (isReconnect) {
                 // Schedule the next reconnect attempt
