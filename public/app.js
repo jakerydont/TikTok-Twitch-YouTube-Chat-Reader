@@ -121,6 +121,12 @@ function generateYouTubeUsernameLink(data) {
     return `YOUTUBE <a class="usernamelink" href="https://www.youtube.com/@${data.authorChannelName}" target="_blank">${data.authorChannelName}</a>`;
 }
 
+function generateTwitchUsernameLink(data) {
+    let username = "some username";
+    //return `TWITCH <a class="usernamelink" href="https://www.youtube.com/@${data.authorChannelName}" target="_blank">${data.authorChannelName}</a>`;
+    return `TWITCH ${username}`;
+}
+
 function isPendingStreak(data) {
     return data.giftType === 1 && !data.repeatEnd;
 }
