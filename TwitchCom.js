@@ -1,17 +1,26 @@
 const https = require('https');
 const opn = require('opn');
-const express = require('express');
 const fs = require('fs');
+const { EventEmitter } = require('events');
 const path = require('path');
+
 
 const PubSub = require("./PubSub");
 const TwitchIRC = require("./TwitchIRC");
 
-class TwitchCom {
-    constructor(config, app) {
-        this.app = app;
-        this.appClientID = config.appConfig.appClientID;
-        this.redirectUri = config.appConfig.redirectUri;
+class TwitchCom extends EventEmitter {
+    constructor(myConfig, express, httpServer, webServer) {
+        super();
+        let config;
+        if ((typeof myConfig) === 'string' ) {
+            if (fs.existsSync(myConfig)) {
+                config = JSON.parse(fs.readFileSync(myConfig).toString());
+            }
+        }
+        this.app = express;
+        this.httpServer = httpServer;
+        this.appClientID = config.twitch.appClientID;
+        this.redirectUri = config.twitch.redirectUri;
 
         this.channelID = "";
         this.channelName = "";
@@ -23,13 +32,20 @@ class TwitchCom {
 
         this.loginResolve = null;
 
-        this.webServerPort = config.callbackPort;
-        this.webServer = express();
-        this.webServer.use(express.json());
-        this.webServer.get('/', (req, res) => {
-            res.sendFile(path.resolve("public/index.html"));
-        })
-        this.webServer.post('/access_token', (req, res) => {
+        this.webServerPort = config.twitch.callbackPort;
+        this.webServer = webServer;
+        //this.webServer.use(express.json());
+        // this.webServer.get('/', (req, res) => {
+        //     res.sendFile(path.resolve("public/index.html"));
+        // })
+
+        //this.httpServer.listen(this.webServerPort);
+
+        this.config = config;
+
+
+        /// set access token
+        this.httpServer.post('/access_token', (req, res) => {
             if (this.loginResolve) {
                 this.setAccessToken(req.body.access_token);
 
@@ -38,9 +54,48 @@ class TwitchCom {
                 });
             }
         })
-        this.webServer.listen(this.webServerPort);
 
-        this.config = config;
+                /// set access token
+        this.httpServer.post('/tokenCallback', (req, res) => {
+            let body = []
+            req.on('data', function(chunk) {
+                //body.push(chunk);
+            });
+            req.on('readable', function()  {
+                body.push(this.read());
+            });
+            req.on('end',  () => {
+                if(!body) {
+                    return;
+                }
+                let concatBody = JSON.parse(Buffer.from(body[0]).toString())
+                if (this.loginResolve) {
+                    this.setAccessToken(concatBody.access_token);
+    
+                    this.validate(this.storedAccessToken).then(() => {
+                        this.loginResolve();
+                    });
+                }
+                
+            });
+
+
+
+
+
+        })
+
+
+    }
+
+    connect() {
+        if (this.loginResolve) {
+            this.setAccessToken(req.body.access_token);
+
+            this.validate(this.storedAccessToken).then(() => {
+                this.loginResolve();
+            });
+        }
     }
 
     setAccessToken(token) {
@@ -107,7 +162,8 @@ class TwitchCom {
                 "chat:read"//,
                 //"channel:moderate"
             ]
-            opn("https://id.twitch.tv/oauth2/authorize?client_id=" + encodeURI(this.appClientID) + "&redirect_uri=" + encodeURI(this.redirectUri + ":" + this.webServerPort) + "&response_type=token&scope=" + encodeURI(scope.join(' ')));
+            //opn("https://id.twitch.tv/oauth2/authorize?client_id=" + encodeURI(this.appClientID) + "&redirect_uri=" + encodeURI(this.redirectUri + ":" + this.webServerPort) + "&response_type=token&scope=" + encodeURI(scope.join(' ')));
+            opn("https://id.twitch.tv/oauth2/authorize?client_id=" + encodeURI(this.appClientID) + "&redirect_uri=" + encodeURI(this.redirectUri) + "&response_type=token&scope=" + encodeURI(scope.join(' ')));
         });
     }
 
@@ -119,7 +175,7 @@ class TwitchCom {
                 });
             }
             else {
-                this.login().then(() => {
+                this.login(). then(() => {
                     resolve();
                 });
             }
@@ -235,7 +291,7 @@ class TwitchCom {
     connect() {
         this.authenticate().then(() => {
             console.log("Completed Twitch authentication");
-            this.app.addReadyFlag(1);
+            this.emit('').addReadyFlag(1);
 
             let pubSub = new PubSub(this.config, this.storedAccessToken, this.channelID, this);
             pubSub.connect();

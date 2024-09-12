@@ -1,0 +1,43 @@
+{
+
+	"verbose": true,
+    "appConfig" : {
+
+     
+    },
+	"blacklist": [
+		"StreamElements",
+        "Streamlabs",
+        "Nightbot",
+        "Moobot",
+        "AnkhBot",
+        "PhantomBot",
+        "Wizebot",
+        "DeepBot",
+        "Botisimo",
+        "ScorpBot",
+        "Streamlabs Chatbot",
+        "Cloudbot",
+        "Chatbot",
+        "AudioAlerts"
+
+	],
+    "tiktok": {
+        "uniqueID": ""
+    },
+    "twitch": {
+        "botName": "jakerydont bridge", 
+        "appClientID": "o44kx5xjxbfpfr7wmy7zaeflbk77y1",
+        "redirectUri": "http://localhost:8081/twitchLoginCallback.html",
+        "pubSubHost": "wss://pubsub-edge.twitch.tv",
+        "callbackPort": 8081
+    },
+    "youtube": {
+        "channelName": "",
+        "channelId": "",
+        "liveVideoId": "",
+        "pollInterval": 5000
+
+    }    
+
+}

@@ -28,6 +28,7 @@ $(document).ready(() => {
         }
     });
 
+    $("#twitchAuthenticate").click(twitchAuthenticate);
 
     if(window.settings.youTubeLiveVideoId) youTubeConnect();
 })
@@ -98,6 +99,11 @@ function youTubeConnect() {
     }
 }
 
+function twitchAuthenticate() {
+    connection.twitchAuthenticate().then(state => {
+        console.log(state)
+    })  
+}
 
 // Prevent Cross site scripting (XSS)
 function sanitize(text) {

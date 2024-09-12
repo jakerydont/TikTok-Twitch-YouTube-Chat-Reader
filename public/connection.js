@@ -71,12 +71,40 @@ class connection {
         })
     }
 
+    twitchAuthenticate() {
+
+        this.setTwitchId();
+
+        return new Promise((resolve, reject) => {
+            this.socket.once('twitchAuthenticate', resolve);
+            this.socket.once('twitchAuthenticateRejected', reject);
+        })
+    }
+
+    twitchConneect() {
+
+        this.setTwitchId();
+
+        return new Promise((resolve, reject) => {
+            this.socket.once('twitchConnect', resolve);
+            this.socket.once('twitchDisconnect', reject);
+
+            setTimeout(() => {
+                reject('Connection Timeout');
+            }, 15000)
+        })
+    }
+
     setUniqueId() {
         this.socket.emit('setUniqueId', this.uniqueId, this.options);
     }
 
     setYouTubeLiveVideoId() {
         this.socket.emit('setYouTubeLiveVideoId', this.youTubeLiveVideoId, this.options);
+    }
+
+    setTwitchId() {
+        this.socket.emit('setTwitchId');
     }
 
     on(eventName, eventHandler) {
