@@ -291,7 +291,7 @@ class TwitchCom extends EventEmitter {
     connect() {
         this.authenticate().then(() => {
             console.log("Completed Twitch authentication");
-            this.emit('').addReadyFlag(1);
+            this.emit('twitchAuthenticated')
 
             let pubSub = new PubSub(this.config, this.storedAccessToken, this.channelID, this);
             pubSub.connect();

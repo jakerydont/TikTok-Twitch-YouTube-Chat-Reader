@@ -27,17 +27,8 @@ class TwitchIRC {
 
         this.client.on('message', (target, context, msg, self) => {
             if (self) return;
-
-            if (that.usersInChat.indexOf(context["display-name"]) == -1) {
-                that.usersInChat.push(context["display-name"]);
-                that.twitchCom.app.triggerManager.trigger("VIEWER_JOINS", {
-                    message: "",
-                    username: context["display-name"],
-                    subscriber: false
-                });
-            }
-
-            that.twitchCom.app.triggerManager.trigger("COMMAND", {
+            console.log(msg);
+            that.twitchCom.emit('twitchMessage', {
                 message: msg,
                 username: context["display-name"],
                 subscriber: context.subscriber
@@ -47,22 +38,22 @@ class TwitchIRC {
         //*
         this.client.on("join", (channel, username, self) => {
             that.twitchCom.apiGetRequest("/helix/users?login=" + username).then((data) => {
-                that.twitchCom.app.triggerManager.trigger("VIEWER_JOINS", {
+                that.twitchCom.emit('twitchUserJoin',{
                     message: "",
                     username: data.data[0].display_name,
                     subscriber: false
-                }, "TWITCH");
+                });
             });
         });//*/
 
         this.client.on('connected', (addr, port) => {
             console.log("Connected to Twitch chat");
-            this.twitchCom.app.addReadyFlag(2);
+            this.twitchCom.emit('twitchChatConnected');
         });
 
         this.client.on('disconnected', (addr, port) => {
             console.log("Twitch chat disconnected");
-            this.twitchCom.app.removeReadyFlag(2);
+            this.twitchCom.emit('twitchChatDisconnected');
         });
     }
 

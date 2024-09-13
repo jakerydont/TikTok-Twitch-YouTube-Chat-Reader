@@ -18,7 +18,7 @@ class PubSub {
 
         this.client.on("connect", (connection) => {
             console.log("Connected to PubSub");
-            that.twitchCom.app.addReadyFlag(4);
+            that.twitchCom.emit('twitchConnect');
 
             connection.on('error', function (error) {
                 console.error("Error in PubSub WebSocket: " + error);
@@ -184,7 +184,7 @@ class PubSub {
             this.pingKeepAlive(connection);
         });
 
-        this.host = config.appConfig.pubSubHost;
+        this.host = config.twitch.pubSubHost;
     }
 
     pingKeepAlive(connection) {
