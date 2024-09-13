@@ -1,5 +1,7 @@
 #Custom
 *-secret.json
+access_token.bin
+config.json
 
 # Logs
 logs
