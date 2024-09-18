@@ -1,4 +1,5 @@
 import Connection from './connection.js'
+import * as Constants from './constants.js'
 
 // This will use the demo backend if you open index.html locally via file://, otherwise your server will be used
 let backendUrl = location.protocol === 'file:' ? "https://tiktok-chat-reader.zerody.one/" : undefined;
@@ -160,7 +161,7 @@ function addChatItem(originColor, data, originText, summarize) {
         usernameLink = generateYouTubeUsernameLink(data);
     }
     else {
-        data.sourceIcon = 'tiktokIcon.png';
+        data.sourceIcon = Constants.tiktok.sourceIcon;
         usernameLink = generateUsernameLink(data);
     }
     let container = location.href.includes('obs.html') ? $('.eventcontainer') : $('.chatcontainer');
