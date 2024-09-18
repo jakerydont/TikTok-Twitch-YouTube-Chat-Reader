@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
         tiktokConnectionWrapper.connection.on('chat', msg => socket.emit('chat', msg));
         tiktokConnectionWrapper.connection.on('gift', msg => socket.emit('gift', msg));
         tiktokConnectionWrapper.connection.on('social', msg => socket.emit('social', msg));
-       // tiktokConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
+        tiktokConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
         tiktokConnectionWrapper.connection.on('questionNew', msg => socket.emit('questionNew', msg));
         tiktokConnectionWrapper.connection.on('linkMicBattle', msg => socket.emit('linkMicBattle', msg));
         tiktokConnectionWrapper.connection.on('linkMicArmies', msg => socket.emit('linkMicArmies', msg));
@@ -116,6 +116,9 @@ io.on('connection', (socket) => {
             youTubeConnectionWrapper.connect();
         } catch (err) {
             socket.emit('youTubeDisconnected', err.toString());
+            if (youTubeConnectionWrapper) {
+                youTubeConnectionWrapper.disconnect();
+            }
             return;
         }
 
@@ -172,7 +175,11 @@ io.on('connection', (socket) => {
 
         // // Notify client when stream ends
         // youTubeConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
+        this.twitchCom.on('twitchChat', msg => {5
+            socket.emit('chat', msg)
+        });
 
+        
         // // Redirect message events
         // youTubeConnectionWrapper.connection.on('roomUser', msg => socket.emit('roomUser', msg));
         // youTubeConnectionWrapper.connection.on('member', msg => socket.emit('member', msg));
