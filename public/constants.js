@@ -9,5 +9,4 @@ const Constants = {
         sourceIcon: 'tiktokIcon.png'
     },
 };
-
-module.exports = Constants;
+try {module.exports = Constants;} catch(e) {}
