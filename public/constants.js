@@ -1,4 +1,4 @@
-export default {
+const Constants = {
     twitch: {
         sourceIcon: 'twitchIcon.png'
     },
@@ -8,4 +8,6 @@ export default {
     tiktok: {
         sourceIcon: 'tiktokIcon.png'
     },
-}
+};
+
+module.exports = Constants;
