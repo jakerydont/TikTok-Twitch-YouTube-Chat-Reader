@@ -17,10 +17,18 @@ class TwitchCom extends EventEmitter {
                 config = JSON.parse(fs.readFileSync(myConfig).toString());
             }
         }
+
+        this.clientDisconnected = false;
+        this.reconnectEnabled = true;
+        this.reconnectCount = 0;
+        this.reconnectWaitMs = 1000;
+
         this.app = express;
         this.httpServer = httpServer;
         this.appClientID = config.twitch.appClientID;
         this.redirectUri = config.twitch.redirectUri;
+
+
 
         this.channelID = "";
         this.channelName = "";
@@ -95,6 +103,17 @@ class TwitchCom extends EventEmitter {
             this.validate(this.storedAccessToken).then(() => {
                 this.loginResolve();
             });
+        }
+    }
+
+    disconnect() {
+        this.log(`Twitch client connection disconnected`);
+
+        this.clientDisconnected = true;
+        this.reconnectEnabled = false;
+
+        if (this.connection.getState().isConnected) {
+            this.connection.disconnect();
         }
     }
 
@@ -288,7 +307,7 @@ class TwitchCom extends EventEmitter {
         });
     }
 
-    connect() {
+    connect(isReconnect) {
         this.authenticate().then(() => {
             console.log("Completed Twitch authentication");
             this.emit('twitchAuthenticated')
@@ -306,7 +325,15 @@ class TwitchCom extends EventEmitter {
             });*/
 
         }).catch(() => {
-            console.error("Failed Twitch authentication");
+            console.error(`${isReconnect ? 'Twitch Reconnect' : 'Twitch Connection'} failed, ${err}`);
+
+            if (isReconnect) {
+                // Schedule the next reconnect attempt
+                // this.scheduleReconnect(err);
+            } else {
+                // Notify client
+                this.emit('disconnected', err.toString());
+            }
         });
     }
 }

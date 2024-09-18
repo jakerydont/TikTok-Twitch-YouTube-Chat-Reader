@@ -17,10 +17,19 @@
     <script type="module"  src="app.js"></script>
     <script>
         function generateOverlay() {
-            let username = $('#uniqueIdInput').val();
-            let url = `/obs.html?username=${username}&showLikes=1&showChats=1&showGifts=1&showFollows=1&showJoins=1&bgColor=rgb(24,23,28)&fontColor=rgb(227,229,235)&fontSize=1.3em`;
+            let username = $('#tiktokUniqueIdInput').val() || '';
+            let youTubeUserName = $('#youTubeUserNameInput').val() || '';
+            //let url = `/obs.html?username=${username}&showLikes=1&showChats=1&showGifts=1&showFollows=1&showJoins=1&bgColor=rgb(24,23,28)&fontColor=rgb(227,229,235)&fontSize=1.3em`;
+            let url = `/obs.html` + 
+                `?username=${username}` +
+                `&youTubeUserName=${youTubeUserName}` +
+                `&connectToTwitch=true`+
+                `&showLikes=0`+
+                `&showChats=1`+
+                `&showGifts=0`+
+                `&showFollows=1&showJoins=1&fontColor=rgb(227,229,235)&fontSize=1.3em`;
         
-            if(username) {
+            if(username || youTubeUserName) {
                 window.open(url, '_blank');
             } else {
                 alert("Enter username");
@@ -45,7 +54,7 @@
         <a href="#" onclick="generateOverlay()">Generate Overlay URL</a>
 
         <p>YouTube:</p>
-        <input type="text" id="youTubeLiveVideoIdInput" value="UCkb6sUirgY1GVcRQ0ZkjUFA" />
+        <input type="text" id="youTubeUserNameInput" value="jakerydont" />
         <input type="button" id="youTubeConnectButton" value="connect">
 
         <p>Twitch:</p>

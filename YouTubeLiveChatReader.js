@@ -1,5 +1,6 @@
 const secret = require('./youtube-secret.json');
 const { EventEmitter } = require('events');
+const constants = require('./public/constants');
 const source = "youtube";
 const ControlEvents = {
   CONNECTED: 'connected',
@@ -10,6 +11,7 @@ const ControlEvents = {
   STREAMEND: 'streamEnd',
   WSCONNECTED: 'websocketConnected'
 };
+
 
 class YouTubeLiveChatReader extends EventEmitter {
   constructor(uniqueId, config) {
@@ -211,7 +213,9 @@ class YouTubeLiveChatReader extends EventEmitter {
                   source,
                   authorChannelId,
                   authorChannelName,
-                  message
+                  message,
+                  profilePictureUrl: '',
+                  sourceIcon: constants.youtube.sourceIcon
                 });
               }
               //console.log(data.items[i]);

@@ -1,4 +1,5 @@
 const tmi = require('tmi.js');
+const constants = require('./public/constants');
 
 class TwitchIRC {
     constructor(config, authToken, channelName, twitchCom) {
@@ -28,10 +29,16 @@ class TwitchIRC {
         this.client.on('message', (target, context, msg, self) => {
             if (self) return;
             console.log(msg);
-            that.twitchCom.emit('twitchMessage', {
+            that.twitchCom.emit('twitchChat', {
+                source: 'TWITCH',
+                sourceIcon: constants.twitch.sourceIcon,
+
+                authorChannelName: context["display-name"],
+                authorChannelId: '',
                 message: msg,
-                username: context["display-name"],
-                subscriber: context.subscriber
+                subscriber: context.subscriber,
+                profilePictureUrl: ''
+
             });
         });
 

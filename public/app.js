@@ -22,15 +22,18 @@ $(document).ready(() => {
         if (window.settings.username) tiktokConnect();
 
     $('#youTubeConnectButton').click(youTubeConnect);
-    $('#youTubeLiveVideoIdInput').on('keyup', function (e) {
+    $('#youTubeUserNameInput').on('keyup', function (e) {
         if (e.key === 'Enter') {
             youTubeConnect();
         }
     });
+    if(window.settings.youTubeUserName) youTubeConnect();
 
     $("#twitchAuthenticate").click(twitchAuthenticate);
+    if (window.settings.connectToTwitch) {
+        twitchAuthenticate();
+    }
 
-    if(window.settings.youTubeLiveVideoId) youTubeConnect();
 })
 
 function tiktokConnect() {
@@ -68,7 +71,7 @@ function tiktokConnect() {
 }
 
 function youTubeConnect() {
-    let youTubeLiveVideoId = window.settings.youTubeLiveVideoId || $('#youTubeLiveVideoIdInput').val();
+    let youTubeLiveVideoId = window.settings.youTubeUserName || $('#youTubeUserNameInput').val();
     if (  youTubeLiveVideoId !== '' ) {
 
         $('#youTubeStateText').text('Connecting...');
@@ -87,9 +90,9 @@ function youTubeConnect() {
             $('#youTubeStateText').text(errorMessage);
 
             // schedule next try if obs username set
-            if (window.settings.youTubeLiveVideoId) {
+            if (window.settings.youTubeUserName) {
                 setTimeout(() => {
-                    youTubeConnect(window.settings.youTubeLiveVideoId);
+                    youTubeConnect(window.settings.youTubeUserName);
                 }, 30000);
             }
         })
@@ -120,17 +123,16 @@ function updateYouTubeRoomStats() {
 }
 
 function generateUsernameLink(data) {
-    return `TIKTOK <a class="usernamelink" href="https://www.tiktok.com/@${data.uniqueId}" target="_blank">${data.uniqueId}</a>`;
+    return `<a class="usernamelink" href="https://www.tiktok.com/@${data.uniqueId}" target="_blank">${data.uniqueId}</a>`;
 }
 
 function generateYouTubeUsernameLink(data) {
-    return `YOUTUBE <a class="usernamelink" href="https://www.youtube.com/@${data.authorChannelName}" target="_blank">${data.authorChannelName}</a>`;
+    return `<a class="usernamelink" href="https://www.youtube.com/@${data.authorChannelName}" target="_blank">${data.authorChannelName}</a>`;
 }
 
 function generateTwitchUsernameLink(data) {
-    let username = "some username";
-    //return `TWITCH <a class="usernamelink" href="https://www.youtube.com/@${data.authorChannelName}" target="_blank">${data.authorChannelName}</a>`;
-    return `TWITCH ${username}`;
+    let username = data.authorChannelName;
+    return `<a class="usernamelink" href="https://www.twitch.tv/${username}" target="_blank">${username}</a>`;
 }
 
 function isPendingStreak(data) {
@@ -141,15 +143,24 @@ function isPendingStreak(data) {
  * Add a new message to the chat container
  */
 function addChatItem(originColor, data, originText, summarize) {
+    console.log('addChatItem',data)
     let text = originText;
     let color = originColor;
     let usernameLink;
-    if (data.source === "youtube") {
+    let source = (data.source || "tiktok").toLowerCase();
+
+    if (source === "twitch") {
+        text = data.message;
+        //color = 'red';
+        usernameLink = generateTwitchUsernameLink(data);
+    } 
+    else if (source === "youtube") {
         text = data.message;
         //color = 'red';
         usernameLink = generateYouTubeUsernameLink(data);
-    } else {
-        data.source = "tiktok"
+    }
+    else {
+        data.sourceIcon = 'tiktokIcon.png';
         usernameLink = generateUsernameLink(data);
     }
     let container = location.href.includes('obs.html') ? $('.eventcontainer') : $('.chatcontainer');
@@ -162,7 +173,8 @@ function addChatItem(originColor, data, originText, summarize) {
 
     container.append(`
         <div class=${summarize ? 'temporary' : 'static'}>
-            <img class="miniprofilepicture" src="${data.profilePictureUrl}">
+            <img alt="${data.sourceIcon}" class="sourceIcon" src="images/${data.sourceIcon}" width="40" height="40" />
+            ${(data.profilePictureUrl ? `<img class='miniprofilepicture' src='${data.profilePictureUrl}' />` : "")}
             <span>
                 <b>${usernameLink}:</b> 
                 <span style="color:${color}">${sanitize(text)}</span>

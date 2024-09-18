@@ -82,3 +82,8 @@ a {
     width: 50px;
     margin-right: 10px;
 }
+
+.sourceIcon {
+    width: 1rem;
+    height: 1rem;
+}
