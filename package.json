@@ -6,5 +6,8 @@
     "socket.io": "^4.4.1",
     "tiktok-live-connector": "^1.1.7",
     "tmi.js": "^1.8.5"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }
