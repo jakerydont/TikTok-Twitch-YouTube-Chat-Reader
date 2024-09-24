@@ -51,9 +51,6 @@ class connection {
     connect(uniqueId, options) {
         this.uniqueId = uniqueId;
         this.options = options || {};
-
-        this.setTiktokUniqueId();
-
         return new Promise((resolve, reject) => {
             this.socket.once('tiktokConnected', resolve);
             this.socket.once('tiktokDisconnected', reject);
