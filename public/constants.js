@@ -6,6 +6,9 @@ const Constants = {
         sourceIcon: 'youtubeIcon.png'
     },
     tiktok: {
+        events: {
+            setUniqueId: 'setUniqueId'
+        },
         sourceIcon: 'tiktokIcon.png'
     },
 };

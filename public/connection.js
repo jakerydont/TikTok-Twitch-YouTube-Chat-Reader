@@ -1,3 +1,5 @@
+
+import Constants from './constants.js'
 /**
  * Wrapper for client-side TikTok connection over Socket.IO
  * With reconnect functionality.
@@ -14,7 +16,7 @@ class connection {
 
             // Reconnect to streamer if uniqueId already set
             if (this.uniqueId) {
-                this.setUniqueId();
+                this.setTiktokUniqueId();
             }
 
             if (this.youTubeLiveVideoId) {
@@ -50,7 +52,7 @@ class connection {
         this.uniqueId = uniqueId;
         this.options = options || {};
 
-        this.setUniqueId();
+        this.setTiktokUniqueId();
 
         return new Promise((resolve, reject) => {
             this.socket.once('tiktokConnected', resolve);
@@ -102,8 +104,8 @@ class connection {
         })
     }
 
-    setUniqueId() {
-        this.socket.emit('setUniqueId', this.uniqueId, this.options);
+    setTiktokUniqueId() {
+        this.socket.emit(Constants.tiktok.events.setUniqueId, this.uniqueId, this.options);
     }
 
     setYouTubeLiveVideoId() {

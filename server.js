@@ -7,7 +7,7 @@ const { TikTokConnectionWrapper, getGlobalConnectionCount } = require('./TiktokC
 const { YouTubeConnectionWrapper, getYouTubeGlobalConnectionCount } = require('./YouTubeConnectionWrapper');
 const { clientBlocked } = require('./limiter');
 const TwitchCom = require('./TwitchCom');
-
+const Constants = require('./constants');
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
 
     console.info('New browser-to-server connection from origin', socket.handshake.headers['origin'] || socket.handshake.headers['referer']);
 
-    socket.on('setUniqueId', (uniqueId, options) => {
+    socket.on(Constants.tiktok.events.setUniqueId, (uniqueId, options) => {
 
         // Prohibit the client from specifying these options (for security reasons)
         if (typeof options === 'object' && options) {
