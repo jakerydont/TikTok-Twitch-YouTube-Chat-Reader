@@ -1,5 +1,5 @@
 const tmi = require('tmi.js');
-const constants = require('./public/constants');
+const constants = require('./constants');
 
 class TwitchIRC {
     constructor(config, authToken, channelName, twitchCom) {

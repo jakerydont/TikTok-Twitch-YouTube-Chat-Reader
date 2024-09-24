@@ -1,6 +1,7 @@
 const secret = require('./youtube-secret.json');
 const { EventEmitter } = require('events');
-const constants = require('./public/constants');
+const constants = require('./constants.js');
+//import Constants from './public/constants.js';
 const source = "youtube";
 const ControlEvents = {
   CONNECTED: 'connected',

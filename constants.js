@@ -9,4 +9,4 @@ const Constants = {
         sourceIcon: 'tiktokIcon.png'
     },
 };
-export default Constants
+module.exports = Constants;

@@ -25,7 +25,7 @@ this.twitchCom = new TwitchCom('./config.json', this, app, httpServer);
 io.on('connection', (socket) => {
     let tiktokConnectionWrapper;
 
-    console.info('New connection from origin', socket.handshake.headers['origin'] || socket.handshake.headers['referer']);
+    console.info('New browser-to-server connection from origin', socket.handshake.headers['origin'] || socket.handshake.headers['referer']);
 
     socket.on('setUniqueId', (uniqueId, options) => {
 
