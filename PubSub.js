@@ -136,12 +136,12 @@ class PubSub {
                         let user_input = topicData.data.redemption.user_input;
                         let username = topicData.data.redemption.user.display_name;
 
-                        that.twitchCom.app.triggerManager.trigger("CHANNEL_POINTS_REWARD", {
-                            rewardTitle: title,
-                            message: user_input,
-                            username: username,
-                            subscriber: topicData.data.redemption.reward.is_sub_only
-                        });
+                       // that.twitchCom.app.triggerManager.trigger("CHANNEL_POINTS_REWARD", {
+                        //    rewardTitle: title,
+                        //    message: user_input,
+                        //    username: username,
+                       //     subscriber: topicData.data.redemption.reward.is_sub_only
+                       // });
                     }
                     else if (topic == "channel-subscribe-events-v1." + this.channelID) {
                         let user_input = topicData.sub_message.message;
