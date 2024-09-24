@@ -150,7 +150,11 @@ function addChatItem(originColor, data, originText, summarize) {
     let usernameLink;
     let source = (data.source || "tiktok").toLowerCase();
 
-    if (source === "twitch") {
+    if (source === "tiktok") {
+        data.sourceIcon = Constants.tiktok.sourceIcon;
+        usernameLink = generateUsernameLink(data);
+    }
+    else if (source === "twitch") {
         text = data.message;
         //color = 'red';
         usernameLink = generateTwitchUsernameLink(data);
@@ -161,8 +165,8 @@ function addChatItem(originColor, data, originText, summarize) {
         usernameLink = generateYouTubeUsernameLink(data);
     }
     else {
-        data.sourceIcon = Constants.tiktok.sourceIcon;
-        usernameLink = generateUsernameLink(data);
+        console.warn(`unsupported source`, source);
+        return;
     }
     let container = location.href.includes('obs.html') ? $('.eventcontainer') : $('.chatcontainer');
 
