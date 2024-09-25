@@ -1,5 +1,8 @@
 const Constants = {
     twitch: {
+        events: {
+            chat: 'twitchChat'
+        },
         sourceIcon: 'twitchIcon.png'
     },
     youtube: {
