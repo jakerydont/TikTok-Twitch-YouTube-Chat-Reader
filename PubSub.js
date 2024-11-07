@@ -1,5 +1,7 @@
 const WebSocketClient = require("websocket").client;
 const fs = require("fs");
+const constants = require('./constants');
+
 
 class PubSub {
     constructor(config, auth_token, channelID, twitchCom) {
@@ -133,6 +135,20 @@ class PubSub {
 
                     if (topic == "channel-points-channel-v1." + that.channelID) {
                         let title = topicData.data.redemption.reward.title;
+                        let user =  topicData.data.redemption.user;
+                        if (config.twitch.channelPointsRewards.includes(title)) {
+                            that.twitchCom.emit(constants.twitch.events.chat, {
+                                source: constants.twitch.source,
+                                sourceIcon: constants.twitch.sourceIcon,
+                
+                                authorChannelName: user["display-name"],
+                                authorChannelId: user["id"],
+                                message: topicData.data.redemption.user_input,
+                                subscriber: false,
+                                profilePictureUrl: ''
+                            });
+                        }
+
                         let user_input = topicData.data.redemption.user_input;
                         let username = topicData.data.redemption.user.display_name;
 
@@ -146,21 +162,21 @@ class PubSub {
                     else if (topic == "channel-subscribe-events-v1." + this.channelID) {
                         let user_input = topicData.sub_message.message;
 
-                        let username = topicData.display_name;
-                        let giver = username;
-                        if (topicData.is_gift) {
-                            username = topicData.recipient_display_name;
-                            if (giver == null) {
-                                giver = "anonymous";
-                            }
-                        }
+                        // let username = topicData.display_name;
+                        // let giver = username;
+                        // if (topicData.is_gift) {
+                        //     username = topicData.recipient_display_name;
+                        //     if (giver == null) {
+                        //         giver = "anonymous";
+                        //     }
+                        // }
 
-                        that.twitchCom.app.triggerManager.trigger("SUBSCRIPTION", {
-                            giver: giver,
-                            message: user_input,
-                            username: username,
-                            subscriber: true
-                        });
+                        // that.twitchCom.app.triggerManager.trigger("SUBSCRIPTION", {
+                        //     giver: giver,
+                        //     message: user_input,
+                        //     username: username,
+                        //     subscriber: true
+                        // });
                     }
                 }
             });

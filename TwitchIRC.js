@@ -29,8 +29,8 @@ class TwitchIRC {
         this.client.on('message', (target, context, msg, self) => {
             if (self) return;
             console.log(msg);
-            that.twitchCom.emit('twitchChat', {
-                source: 'TWITCH',
+            that.twitchCom.emit(constants.twitch.events.chat, {
+                source: constants.twitch.source,
                 sourceIcon: constants.twitch.sourceIcon,
 
                 authorChannelName: context["display-name"],
@@ -38,7 +38,6 @@ class TwitchIRC {
                 message: msg,
                 subscriber: context.subscriber,
                 profilePictureUrl: ''
-
             });
         });
 
