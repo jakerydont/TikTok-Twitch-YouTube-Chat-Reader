@@ -20,7 +20,7 @@ $(document).ready(() => {
             tiktokConnect();
         }
     });
-        if (window.settings.username) tiktokConnect();
+if (window.settings.username) tiktokConnect();
 
     $('#youTubeConnectButton').click(youTubeConnect);
     $('#youTubeUserNameInput').on('keyup', function (e) {
@@ -111,6 +111,9 @@ function twitchAuthenticate() {
 
 // Prevent Cross site scripting (XSS)
 function sanitize(text) {
+    if (!text) {
+        console.error("no text");
+    }
     return text.replace(/</g, '&lt;')
 }
 
