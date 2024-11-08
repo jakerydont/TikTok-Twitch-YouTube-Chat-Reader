@@ -20,7 +20,7 @@ $(document).ready(() => {
             tiktokConnect();
         }
     });
-if (window.settings.username) tiktokConnect();
+    if (window.settings.username) tiktokConnect();
 
     $('#youTubeConnectButton').click(youTubeConnect);
     $('#youTubeUserNameInput').on('keyup', function (e) {
