@@ -35,12 +35,19 @@ class connection {
 
         this.socket.on('tiktokDisconnected', (errMsg) => {
             console.warn(errMsg);
-            if (errMsg && errMsg.includes('LIVE has ended')) {
+            if (errMsg && errMsg.includes('Tiktok LIVE has ended')) {
                 this.uniqueId = null;
             }
         });
 
-        this.socket.on('tiktokDisconnected', (errMsg) => {
+        this.socket.on('youTubeDisconnected', (errMsg) => {
+            console.warn(errMsg);
+            if (errMsg && errMsg.includes('Youtube LIVE has ended')) {
+                this.uniqueId = null;
+            }
+        });
+
+        this.socket.on('twitchAuthenticateRejected', (errMsg) => {
             console.warn(errMsg);
             if (errMsg && errMsg.includes('LIVE has ended')) {
                 this.uniqueId = null;
@@ -65,9 +72,7 @@ class connection {
     youtubeConnect(youTubeLiveVideoId, options) {
         this.youTubeLiveVideoId = youTubeLiveVideoId;
         this.options = options || {};
-
         this.setYouTubeLiveVideoId();
-
         return new Promise((resolve, reject) => {
             this.socket.once('youTubeConnected', resolve);
             this.socket.once('youTubeDisconnected', reject);
@@ -111,7 +116,7 @@ class connection {
     }
 
     setTwitchId() {
-        this.socket.emit('setTwitchId');
+        this.socket.emit('setTwitchId', "", {});
     }
 
     on(eventName, eventHandler) {
