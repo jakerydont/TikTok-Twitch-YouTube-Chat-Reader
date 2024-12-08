@@ -1,31 +1,16 @@
+const { BaseConnectionWrapper, getGlobalConnectionCount } = require('./BaseConnectionWrapper');
 const { WebcastPushConnection } = require('tiktok-live-connector');
-const { EventEmitter } = require('events');
 
-let globalConnectionCount = 0;
-
-/**
- * TikTok LIVE connection wrapper with advanced reconnect functionality and error handling
- */
-class TikTokConnectionWrapper extends EventEmitter {
+class TikTokConnectionWrapper extends BaseConnectionWrapper {
     constructor(uniqueId, options, enableLog) {
-        super();
-
-        this.uniqueId = uniqueId;
-        this.enableLog = enableLog;
-
-        // Connection State
-        this.clientDisconnected = false;
-        this.reconnectEnabled = true;
-        this.reconnectCount = 0;
-        this.reconnectWaitMs = 1000;
-        this.maxReconnectAttempts = 5;
+        super(uniqueId, options, enableLog);
 
         this.connection = new WebcastPushConnection(uniqueId, options);
 
         this.connection.on('streamEnd', () => {
             this.log(`streamEnd event received, giving up connection`);
             this.reconnectEnabled = false;
-        })
+        });
 
         this.connection.on('disconnected', () => {
             globalConnectionCount -= 1;
@@ -36,7 +21,7 @@ class TikTokConnectionWrapper extends EventEmitter {
         this.connection.on('error', (err) => {
             this.log(`Error event triggered: ${err.info}, ${err.exception}`);
             console.error(err);
-        })
+        });
     }
 
     connect(isReconnect) {
@@ -70,56 +55,11 @@ class TikTokConnectionWrapper extends EventEmitter {
                 // Notify client
                 this.emit('disconnected', err.toString());
             }
-        })
-    }
-
-    scheduleReconnect(reason) {
-
-        if (!this.reconnectEnabled) {
-            return;
-        }
-
-        if (this.reconnectCount >= this.maxReconnectAttempts) {
-            this.log(`Give up connection, max reconnect attempts exceeded`);
-            this.emit('disconnected', `Connection lost. ${reason}`);
-            return;
-        }
-
-        this.log(`Try reconnect in ${this.reconnectWaitMs}ms`);
-
-        setTimeout(() => {
-            if (!this.reconnectEnabled || this.reconnectCount >= this.maxReconnectAttempts) {
-                return;
-            }
-
-            this.reconnectCount += 1;
-            this.reconnectWaitMs *= 2;
-            this.connect(true);
-
-        }, this.reconnectWaitMs)
-    }
-
-    disconnect() {
-        this.log(`Client connection disconnected`);
-
-        this.clientDisconnected = true;
-        this.reconnectEnabled = false;
-
-        if (this.connection.getState().isConnected) {
-            this.connection.disconnect();
-        }
-    }
-
-    log(logString) {
-        if (this.enableLog) {
-            console.log(`WRAPPER @${this.uniqueId}: ${logString}`);
-        }
+        });
     }
 }
 
 module.exports = {
     TikTokConnectionWrapper,
-    getGlobalConnectionCount: () => {
-        return globalConnectionCount;
-    }
+    getGlobalConnectionCount
 };

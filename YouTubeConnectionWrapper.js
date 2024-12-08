@@ -1,31 +1,16 @@
+const { BaseConnectionWrapper, getGlobalConnectionCount } = require('./BaseConnectionWrapper');
 const YoutubeLiveChatReader = require('./YouTubeLiveChatReader');
-const { EventEmitter } = require('events');
 
-let globalConnectionCount = 0;
-
-/**
- * TikTok LIVE connection wrapper with advanced reconnect functionality and error handling
- */
-class YouTubeConnectionWrapper extends EventEmitter {
+class YouTubeConnectionWrapper extends BaseConnectionWrapper {
     constructor(youTubeLiveVideoId, options, enableLog) {
-        super();
-
-        this.youTubeLiveVideoId = youTubeLiveVideoId;
-        this.enableLog = enableLog;
-
-        // Connection State
-        this.clientDisconnected = false;
-        this.reconnectEnabled = true;
-        this.reconnectCount = 0;
-        this.reconnectWaitMs = 1000;
-        this.maxReconnectAttempts = 5;
+        super(youTubeLiveVideoId, options, enableLog);
 
         this.connection = new YoutubeLiveChatReader(youTubeLiveVideoId, options);
 
         this.connection.on('streamEnd', () => {
             this.log(`streamEnd event received, giving up connection`);
             this.reconnectEnabled = false;
-        })
+        });
 
         this.connection.on('disconnected', () => {
             globalConnectionCount -= 1;
@@ -36,12 +21,12 @@ class YouTubeConnectionWrapper extends EventEmitter {
         this.connection.on('error', (err) => {
             this.log(`Error event triggered: ${err.info}, ${err.exception}`);
             console.error(err);
-        })
+        });
     }
 
     connect(isReconnect) {
         this.connection.connect().then((state) => {
-            this.log(`${isReconnect ? 'Reconnected' : 'Connected'} to chatId ${state.chatId}, websocket: ${state.upgradedToWebsocket}`);
+            this.log(`${isReconnect ? 'Reconnected' : 'Connected'} to roomId ${state.roomId}, websocket: ${state.upgradedToWebsocket}`);
 
             globalConnectionCount += 1;
 
@@ -61,7 +46,7 @@ class YouTubeConnectionWrapper extends EventEmitter {
             }
 
         }).catch((err) => {
-                this.log(`${isReconnect ? 'Reconnect' : 'Connection'} failed, ${err}`);
+            this.log(`${isReconnect ? 'Reconnect' : 'Connection'} failed, ${err}`);
 
             if (isReconnect) {
                 // Schedule the next reconnect attempt
@@ -70,56 +55,11 @@ class YouTubeConnectionWrapper extends EventEmitter {
                 // Notify client
                 this.emit('disconnected', err.toString());
             }
-        })
-    }
-
-    scheduleReconnect(reason) {
-
-        if (!this.reconnectEnabled) {
-            return;
-        }
-
-        if (this.reconnectCount >= this.maxReconnectAttempts) {
-            this.log(`Give up connection, max reconnect attempts exceeded`);
-            this.emit('disconnected', `Connection lost. ${reason}`);
-            return;
-        }
-
-        this.log(`Try reconnect in ${this.reconnectWaitMs}ms`);
-
-        setTimeout(() => {
-            if (!this.reconnectEnabled || this.reconnectCount >= this.maxReconnectAttempts) {
-                return;
-            }
-
-            this.reconnectCount += 1;
-            this.reconnectWaitMs *= 2;
-            this.connect(true);
-
-        }, this.reconnectWaitMs)
-    }
-
-    disconnect() {
-        this.log(`Client connection disconnected`);
-
-        this.clientDisconnected = true;
-        this.reconnectEnabled = false;
-
-        if (this.connection.getState().isConnected) {
-            this.connection.disconnect();
-        }
-    }
-
-    log(logString) {
-        if (this.enableLog) {
-            console.log(`YOUTUBE WRAPPER @${this.youTubeLiveVideoId}: ${logString}`);
-        }
+        });
     }
 }
 
 module.exports = {
     YouTubeConnectionWrapper,
-    getYouTubeGlobalConnectionCount: () => {
-        return globalConnectionCount;
-    }
+    getGlobalConnectionCount
 };
