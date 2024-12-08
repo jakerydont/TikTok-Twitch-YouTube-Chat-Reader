@@ -88,7 +88,7 @@ io.on('connection', (socket) => {
     });
 
     
-    socket.on('setYouTubeLiveVideoId', (uniqueId, options) => {
+    socket.on(Constants.youtube.events.setUniqueId, (uniqueId, options) => {
 
         // Prohibit the client from specifying these options (for security reasons)
         if (typeof options === 'object' && options) {
