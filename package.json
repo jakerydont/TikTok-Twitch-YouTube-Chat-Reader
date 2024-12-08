@@ -8,6 +8,7 @@
     "tmi.js": "^1.8.5"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node build.js"
   }
 }
