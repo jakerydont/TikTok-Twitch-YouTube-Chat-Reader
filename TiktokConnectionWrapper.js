@@ -1,5 +1,6 @@
 const { BaseConnectionWrapper, getGlobalConnectionCount } = require('./BaseConnectionWrapper');
 const { WebcastPushConnection } = require('tiktok-live-connector');
+const Constants = require('./constants').tiktok;
 
 class TikTokConnectionWrapper extends BaseConnectionWrapper {
     constructor(uniqueId, options, enableLog) {
@@ -7,26 +8,26 @@ class TikTokConnectionWrapper extends BaseConnectionWrapper {
 
         this.connection = new WebcastPushConnection(uniqueId, options);
 
-        this.connection.on('streamEnd', () => {
-            this.log(`streamEnd event received, giving up connection`);
+        this.connection.on(Constants.events.streamEnd, () => {
+            this.log(`${Constants.logPrefix}streamEnd event received, giving up connection`);
             this.reconnectEnabled = false;
         });
 
-        this.connection.on('disconnected', () => {
+        this.connection.on(Constants.events.disconnected, () => {
             globalConnectionCount -= 1;
-            this.log(`TikTok connection disconnected`);
+            this.log(`${Constants.logPrefix}connection disconnected`);
             this.scheduleReconnect();
         });
 
-        this.connection.on('error', (err) => {
-            this.log(`Error event triggered: ${err.info}, ${err.exception}`);
+        this.connection.on(Constants.events.error, (err) => {
+            this.log(`${Constants.logPrefix}Error event triggered: ${err.info}, ${err.exception}`);
             console.error(err);
         });
     }
 
     connect(isReconnect) {
         this.connection.connect().then((state) => {
-            this.log(`${isReconnect ? 'Reconnected' : 'Connected'} to roomId ${state.roomId}, websocket: ${state.upgradedToWebsocket}`);
+            this.log(`${Constants.logPrefix}${isReconnect ? 'Reconnected' : 'Connected'} to roomId ${state.roomId}, websocket: ${state.upgradedToWebsocket}`);
 
             globalConnectionCount += 1;
 
@@ -42,7 +43,7 @@ class TikTokConnectionWrapper extends BaseConnectionWrapper {
 
             // Notify client
             if (!isReconnect) {
-                this.emit('connected', state);
+                this.emit(Constants.events.connectedForNotifyClient, state);
             }
 
         }).catch((err) => {
@@ -53,7 +54,7 @@ class TikTokConnectionWrapper extends BaseConnectionWrapper {
                 this.scheduleReconnect(err);
             } else {
                 // Notify client
-                this.emit('disconnected', err.toString());
+                this.emit(Constants.events.disconnectedForNotifyClient, err.toString());
             }
         });
     }

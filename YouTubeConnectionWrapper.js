@@ -1,5 +1,6 @@
 const { BaseConnectionWrapper, getGlobalConnectionCount } = require('./BaseConnectionWrapper');
 const YoutubeLiveChatReader = require('./YouTubeLiveChatReader');
+const Constants = require('./constants').youtube;
 
 class YouTubeConnectionWrapper extends BaseConnectionWrapper {
     constructor(youTubeLiveVideoId, options, enableLog) {
@@ -7,19 +8,19 @@ class YouTubeConnectionWrapper extends BaseConnectionWrapper {
 
         this.connection = new YoutubeLiveChatReader(youTubeLiveVideoId, options);
 
-        this.connection.on('streamEnd', () => {
-            this.log(`streamEnd event received, giving up connection`);
+        this.connection.on(Constants.events.streamEnd, () => {
+            this.log(`${Constants.logPrefix}streamEnd event received, giving up connection`);
             this.reconnectEnabled = false;
         });
 
-        this.connection.on('disconnected', () => {
+        this.connection.on(Constants.events.disconnect, () => {
             globalConnectionCount -= 1;
-            this.log(`YouTube connection disconnected`);
+            this.log(`${Constants.logPrefix}YouTube connection disconnected`);
             this.scheduleReconnect();
         });
 
-        this.connection.on('error', (err) => {
-            this.log(`Error event triggered: ${err.info}, ${err.exception}`);
+        this.connection.on(Constants.events.error, (err) => {
+            this.log(`${Constants.logPrefix}Error event triggered: ${err.info}, ${err.exception}`);
             console.error(err);
         });
     }
@@ -42,7 +43,7 @@ class YouTubeConnectionWrapper extends BaseConnectionWrapper {
 
             // Notify client
             if (!isReconnect) {
-                this.emit('connected', state);
+                this.emit(Constants.events.connectedForNotifyClient, state);
             }
 
         }).catch((err) => {
@@ -53,7 +54,7 @@ class YouTubeConnectionWrapper extends BaseConnectionWrapper {
                 this.scheduleReconnect(err);
             } else {
                 // Notify client
-                this.emit('disconnected', err.toString());
+                this.emit(Constants.events.disconnectedForNotifyClient, err.toString());
             }
         });
     }

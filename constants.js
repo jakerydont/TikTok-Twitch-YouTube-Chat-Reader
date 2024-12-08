@@ -2,12 +2,14 @@ const Constants = {
     client: {
         logPrefix: 'CLIENT: ',
         events: {
+            connected: 'clientConnected',
             chat: 'clientChat'
         }
     },
     twitch: {
         logPrefix: 'TWITCH: ',
         events: {
+            connected: 'twitchConnected',
             chat: 'twitchChat',
             setUniqueId: 'setTwitchId'
         },
@@ -16,6 +18,9 @@ const Constants = {
     youtube: {
         logPrefix: 'YOUTUBE: ',
         events: {
+            connectedForNotifyClient: 'youtubeConnected',
+            disconnectedForNotifyClient: 'youtubeDisconnected',
+            connected: 'youtubeConnected',
             setUniqueId: 'setYouTubeLiveVideoId'
         },
         sourceIcon: 'youtubeIcon.png'
@@ -23,8 +28,19 @@ const Constants = {
     tiktok: {
         logPrefix: 'TIKTOK: ',
         events: {
-            setUniqueId: 'setUniqueId'
+            connectedForNotifyClient: 'tiktokConnected',
+            disconnectedForNotifyClient: 'tiktokDisconnected',
+            // these event names are hard-coded in the tiktok-live-connector library
+            // and cannot be customized
+            connected: 'connected',
+            disconnected: 'disconnected',
+            error: 'error',
+            rawData: 'rawData',
+            decodedData: 'decodedData',
+            streamEnd: 'streamEnd',
+            websocketConnected: 'websocketConnected'
         },
+        
         sourceIcon: 'tiktokIcon.png'
     },
 };
