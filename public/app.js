@@ -1,6 +1,11 @@
 import Connection from './connection.js'
 import Constants from './constants.js'
 
+const clientConstants = Constants.client;
+const twitchConstants = Constants.twitch;
+const youtubeConstants = Constants.youtube;
+const tiktokConstants = Constants.tiktok;
+
 // This will use the demo backend if you open index.html locally via file://, otherwise your server will be used
 let backendUrl = location.protocol === 'file:' ? "https://tiktok-chat-reader.zerody.one/" : undefined;
 let connection = new Connection(backendUrl);
@@ -154,7 +159,7 @@ function addChatItem(originColor, data, originText, summarize) {
     let source = (data.source || "tiktok").toLowerCase();
 
     if (source === "tiktok") {
-        data.sourceIcon = Constants.tiktok.sourceIcon;
+        data.sourceIcon = tiktokConstants.sourceIcon;
         usernameLink = generateUsernameLink(data);
     }
     else if (source === "twitch") {

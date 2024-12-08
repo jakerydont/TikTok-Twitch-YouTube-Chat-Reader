@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+const Constants = require('./constants');
 const express = require('express');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
@@ -7,7 +7,13 @@ const { TikTokConnectionWrapper, getGlobalConnectionCount } = require('./TiktokC
 const { YouTubeConnectionWrapper, getYouTubeGlobalConnectionCount } = require('./YouTubeConnectionWrapper');
 const { clientBlocked } = require('./limiter');
 const TwitchCom = require('./TwitchCom');
-const Constants = require('./constants');
+
+
+const clientConstants = Constants.client;
+const twitchConstants = Constants.twitch;
+const youtubeConstants = Constants.youtube;
+const tiktokConstants = Constants.tiktok;
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,7 +33,7 @@ io.on('connection', (socket) => {
 
     console.info('New browser-to-server connection from origin', socket.handshake.headers['origin'] || socket.handshake.headers['referer']);
 
-    socket.on(Constants.tiktok.events.setUniqueId, (uniqueId, options) => {
+    socket.on(tiktokConstants.events.setUniqueId, (uniqueId, options) => {
 
         // Prohibit the client from specifying these options (for security reasons)
         if (typeof options === 'object' && options) {
@@ -45,7 +51,7 @@ io.on('connection', (socket) => {
 
         // Check if rate limit exceeded
         if (process.env.ENABLE_RATE_LIMIT && clientBlocked(io, socket)) {
-            socket.emit('tiktokDisconnected', 'You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok.');
+            socket.emit(tiktokConstants.events.disconnected, 'You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok.');
             return;
         }
 
@@ -54,13 +60,13 @@ io.on('connection', (socket) => {
             tiktokConnectionWrapper = new TikTokConnectionWrapper(uniqueId, options, true);
             tiktokConnectionWrapper.connect();
         } catch (err) {
-            socket.emit('tiktokDisconnected', err.toString());
+            socket.emit(tiktokConstants.events.disconnected, err.toString());
             return;
         }
 
         // Redirect wrapper control events once
         tiktokConnectionWrapper.once('connected', state => socket.emit('tiktokConnected', state));
-        tiktokConnectionWrapper.once('disconnected', reason => socket.emit('tiktokDisconnected', reason));
+        tiktokConnectionWrapper.once('disconnected', reason => socket.emit(tiktokConstants.events.disconnected, reason));
 
         // Notify client when stream ends
         tiktokConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
@@ -68,7 +74,7 @@ io.on('connection', (socket) => {
         // Redirect message events
         tiktokConnectionWrapper.connection.on('roomUser', msg => socket.emit('roomUser', msg));
         tiktokConnectionWrapper.connection.on('member', msg => socket.emit('member', msg));
-        tiktokConnectionWrapper.connection.on('chat', msg => socket.emit('chat', msg));
+        tiktokConnectionWrapper.connection.on(tiktokConstants.events.chat, msg => socket.emit(clientConstants.events.chat, msg));
         tiktokConnectionWrapper.connection.on('gift', msg => socket.emit('gift', msg));
         tiktokConnectionWrapper.connection.on('social', msg => socket.emit('social', msg));
         tiktokConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
@@ -88,7 +94,7 @@ io.on('connection', (socket) => {
     });
 
     
-    socket.on(Constants.youtube.events.setUniqueId, (uniqueId, options) => {
+    socket.on(youtubeConstants.events.setUniqueId, (uniqueId, options) => {
 
         // Prohibit the client from specifying these options (for security reasons)
         if (typeof options === 'object' && options) {
@@ -106,7 +112,7 @@ io.on('connection', (socket) => {
 
         // Check if rate limit exceeded
         if (process.env.ENABLE_RATE_LIMIT && clientBlocked(io, socket)) {
-            socket.emit('youTubeDisconnected', 'YOUTUBE: You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok.');
+            socket.emit('youTubeDisconnected', `${youtubeConstants.logPrefix} You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok.`);
             return;
         }
 
@@ -132,9 +138,9 @@ io.on('connection', (socket) => {
         // Redirect message events
         youTubeConnectionWrapper.connection.on('roomUser', msg => socket.emit('roomUser', msg));
         youTubeConnectionWrapper.connection.on('member', msg => socket.emit('member', msg));
-        youTubeConnectionWrapper.connection.on('chat', msg => {
-            socket.emit('chat', msg)
-        });
+        youTubeConnectionWrapper.connection.on(youtubeConstants.events.chat, msg => 
+            socket.emit(clientConstants.events.chat, msg)
+        );
         youTubeConnectionWrapper.connection.on('gift', msg => socket.emit('gift', msg));
         youTubeConnectionWrapper.connection.on('social', msg => socket.emit('social', msg));
         youTubeConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
@@ -147,14 +153,14 @@ io.on('connection', (socket) => {
         youTubeConnectionWrapper.connection.on('subscribe', msg => socket.emit('subscribe', msg));
     });
 
-    socket.on('setTwitchId', () => {
+    socket.on(twitchConstants.events.setUniqueId, () => {
 
 
 
 
         // // Check if rate limit exceeded
         // if (process.env.ENABLE_RATE_LIMIT && clientBlocked(io, socket)) {
-        //     socket.emit('youTubeDisconnected', 'YOUTUBE: You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok.');
+        //     socket.emit('twitchDisconnected', 'TWITCH: You have opened too many connections or made too many connection requests. Please reduce the number of connections/requests or host your own server instance. The connections are limited to avoid that the server IP gets blocked by TokTok.');
         //     return;
         // }
 
@@ -162,47 +168,47 @@ io.on('connection', (socket) => {
 
         // // Connect to the given username (uniqueId)
         // try {
-        //     youTubeConnectionWrapper = new YouTubeConnectionWrapper(uniqueId, options, true);
-        //     youTubeConnectionWrapper.connect();
+        //     twitchConnectionWrapper = new YouTubeConnectionWrapper(uniqueId, options, true);
+        //     twitchConnectionWrapper.connect();
         // } catch (err) {
-        //     socket.emit('youTubeDisconnected', err.toString());
+        //     socket.emit('twitchDisconnected', err.toString());
         //     return;
         // }
 
         // // Redirect wrapper control events once
-        // youTubeConnectionWrapper.once('connected', state => socket.emit('youTubeConnected', state));
-        // youTubeConnectionWrapper.once('disconnected', reason => socket.emit('youTubeDisconnected', reason));
+        // twitchConnectionWrapper.once('connected', state => socket.emit('twitchConnected', state));
+        // twitchConnectionWrapper.once('disconnected', reason => socket.emit('twitchDisconnected', reason));
 
         // // Notify client when stream ends
-        // youTubeConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
-        this.twitchCom.on('twitchChat', msg => {5
-            socket.emit('chat', msg)
+        // twitchConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
+        this.twitchCom.on(twitchConstants.events.chat, msg => {5
+            socket.emit(clientConstants.events.chat, msg)
         });
 
         
         // // Redirect message events
-        // youTubeConnectionWrapper.connection.on('roomUser', msg => socket.emit('roomUser', msg));
-        // youTubeConnectionWrapper.connection.on('member', msg => socket.emit('member', msg));
-        // youTubeConnectionWrapper.connection.on('chat', msg => {
+        // twitchConnectionWrapper.connection.on('roomUser', msg => socket.emit('roomUser', msg));
+        // twitchConnectionWrapper.connection.on('member', msg => socket.emit('member', msg));
+        // twitchConnectionWrapper.connection.on('chat', msg => {
         //     socket.emit('chat', msg)
         // });
-        // youTubeConnectionWrapper.connection.on('gift', msg => socket.emit('gift', msg));
-        // youTubeConnectionWrapper.connection.on('social', msg => socket.emit('social', msg));
-        // youTubeConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
-        // youTubeConnectionWrapper.connection.on('questionNew', msg => socket.emit('questionNew', msg));
-        // youTubeConnectionWrapper.connection.on('linkMicBattle', msg => socket.emit('linkMicBattle', msg));
-        // youTubeConnectionWrapper.connection.on('linkMicArmies', msg => socket.emit('linkMicArmies', msg));
-        // youTubeConnectionWrapper.connection.on('liveIntro', msg => socket.emit('liveIntro', msg));
-        // youTubeConnectionWrapper.connection.on('emote', msg => socket.emit('emote', msg));
-        // youTubeConnectionWrapper.connection.on('envelope', msg => socket.emit('envelope', msg));
-        // youTubeConnectionWrapper.connection.on('subscribe', msg => socket.emit('subscribe', msg));
+        // twitchConnectionWrapper.connection.on('gift', msg => socket.emit('gift', msg));
+        // twitchConnectionWrapper.connection.on('social', msg => socket.emit('social', msg));
+        // twitchConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
+        // twitchConnectionWrapper.connection.on('questionNew', msg => socket.emit('questionNew', msg));
+        // twitchConnectionWrapper.connection.on('linkMicBattle', msg => socket.emit('linkMicBattle', msg));
+        // twitchConnectionWrapper.connection.on('linkMicArmies', msg => socket.emit('linkMicArmies', msg));
+        // twitchConnectionWrapper.connection.on('liveIntro', msg => socket.emit('liveIntro', msg));
+        // twitchConnectionWrapper.connection.on('emote', msg => socket.emit('emote', msg));
+        // twitchConnectionWrapper.connection.on('envelope', msg => socket.emit('envelope', msg));
+        // twitchConnectionWrapper.connection.on('subscribe', msg => socket.emit('subscribe', msg));
     })
 });
 
 // Emit global connection statistics
 setInterval(() => {
     io.emit('statistic', { globalConnectionCount: getGlobalConnectionCount() });
-    io.emit('statistic', { youTubeGlobalConnectionCount: getYouTubeGlobalConnectionCount() });
+    io.emit('statistic', { twitchGlobalConnectionCount: getYouTubeGlobalConnectionCount() });
 }, 5000)
 
 // Serve frontend files

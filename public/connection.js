@@ -33,7 +33,7 @@ class connection {
             this.uniqueId = null;
         })
 
-        this.socket.on('tiktokDisconnected', (errMsg) => {
+        this.socket.on(tiktokConstants.events.disconnected, (errMsg) => {
             console.warn(errMsg);
             if (errMsg && errMsg.includes('Tiktok LIVE has ended')) {
                 this.uniqueId = null;
@@ -61,7 +61,7 @@ class connection {
         this.setTiktokUniqueId();
         return new Promise((resolve, reject) => {
             this.socket.once('tiktokConnected', resolve);
-            this.socket.once('tiktokDisconnected', reject);
+            this.socket.once(tiktokConstants.events.disconnected, reject);
 
             setTimeout(() => {
                 reject('Connection Timeout');
@@ -108,7 +108,7 @@ class connection {
     }
 
     setTiktokUniqueId() {
-        this.socket.emit(Constants.tiktok.events.setUniqueId, this.uniqueId, this.options);
+        this.socket.emit(tiktokConstants.events.setUniqueId, this.uniqueId, this.options);
     }
 
     setYouTubeLiveVideoId() {

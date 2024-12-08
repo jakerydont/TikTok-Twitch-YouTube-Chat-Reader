@@ -1,7 +1,7 @@
 const WebSocketClient = require("websocket").client;
 const fs = require("fs");
-const constants = require('./constants');
-
+const Constants = require('./constants');
+const twitchConstants = Constants.twitch;
 
 class PubSub {
     constructor(config, auth_token, channelID, twitchCom) {
@@ -137,9 +137,9 @@ class PubSub {
                         let title = topicData.data.redemption.reward.title;
                         let user =  topicData.data.redemption.user;
                         if (config.twitch.channelPointsRewards.includes(title)) {
-                            that.twitchCom.emit(constants.twitch.events.chat, {
-                                source: constants.twitch.source,
-                                sourceIcon: constants.twitch.sourceIcon,
+                            that.twitchCom.emit(twitchConstants.events.chat, {
+                                source: twitchConstants.source,
+                                sourceIcon: twitchConstants.sourceIcon,
                 
                                 authorChannelName: user["display-name"],
                                 authorChannelId: user["id"],

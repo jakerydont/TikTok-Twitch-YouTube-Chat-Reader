@@ -1,7 +1,7 @@
 const secret = require('./youtube-secret.json');
 const { EventEmitter } = require('events');
-const constants = require('./constants.js');
-//import Constants from './public/constants.js';
+const Constants = require('./constants.js');
+const youtubeConstants = Constants.youtube;
 const source = "youtube";
 const ControlEvents = {
   CONNECTED: 'connected',
@@ -209,14 +209,14 @@ class YouTubeLiveChatReader extends EventEmitter {
                 }
                 let message = data.items[i].snippet.displayMessage;
                 printedMessagesCount++;
-                console.log("YOUTUBE: ", printedMessagesCount, authorChannelName, data.items[i].snippet.displayMessage);
+                console.log(youtubeConstants.logPrefix, printedMessagesCount, authorChannelName, data.items[i].snippet.displayMessage);
                 this.emit("chat", {
                   source,
                   authorChannelId,
                   authorChannelName,
                   message,
                   profilePictureUrl: '',
-                  sourceIcon: constants.youtube.sourceIcon
+                  sourceIcon: youtubeConstants.sourceIcon
                 });
               }
               //console.log(data.items[i]);
