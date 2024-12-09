@@ -10,5 +10,9 @@
   "scripts": {
     "start": "node server.js",
     "build": "node build.js"
+  },
+  "devDependencies": {
+    "sinon": "^19.0.2",
+    "supertest": "^7.0.0"
   }
 }
