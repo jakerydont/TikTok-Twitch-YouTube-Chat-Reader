@@ -1,9 +1,9 @@
-const DefaultAction = require("./actions/Action");
-const NameRide = require("./actions/NameRide");
-const SpawnPeep = require("./actions/SpawnPeep");
-const ReplaceRideColor = require("./actions/ReplaceRideColor");
+import DefaultAction from "./actions/Action.js";
+import NameRide from "./actions/NameRide.js";
+import SpawnPeep from "./actions/SpawnPeep.js";
+import ReplaceRideColor from "./actions/ReplaceRideColor.js";
 
-const Net = require("net");
+import { Server } from "net";
 const port = 8081;
 
 class ActionManager {
@@ -37,7 +37,7 @@ class ActionManager {
         this.registerAction(DefaultAction, "SET_PARK_NAME");
         this.registerAction(DefaultAction, "FIX_RIDES");
 
-        this.tcpServer = new Net.Server();
+        this.tcpServer = new Server();
         this.activeSocket = null;
 
         this.tcpServer.on("connection", (socket) => {
@@ -133,4 +133,4 @@ class ActionManager {
     }
 }
 
-module.exports = ActionManager;
+export default ActionManager;

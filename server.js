@@ -1,18 +1,26 @@
+// add require import for modulejs support
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
 require('dotenv').config();
-const Constants = require('./constants');
-const express = require('express');
-const { createServer } = require('http');
-const { Server } = require('socket.io');
-const { TikTokConnectionWrapper, getGlobalConnectionCount } = require('./TiktokConnectionWrapper');
-const { YouTubeConnectionWrapper, getYouTubeGlobalConnectionCount } = require('./YouTubeConnectionWrapper');
-const { clientBlocked } = require('./limiter');
-const TwitchCom = require('./TwitchCom');
+import { client, twitch, youtube, tiktok } from './constants.js';
+import express, { static as expressStatic } from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import TikTokConnectionWrapper,{ getTiktokConnectionCount } from './TiktokConnectionWrapper.js';
+import YouTubeConnectionWrapper,{ getYouTubeConnectionCount } from './YouTubeConnectionWrapper.js';
+import clientBlocked from './limiter.js';
+import TwitchCom, {getTwitchConnectionCount} from './TwitchCom.js';
 
 
-const clientConstants = Constants.client;
-const twitchConstants = Constants.twitch;
-const youtubeConstants = Constants.youtube;
-const tiktokConstants = Constants.tiktok;
+const clientConstants = client;
+const twitchConstants = twitch;
+const youtubeConstants = youtube;
+const tiktokConstants = tiktok;
+
+let youtubeConnectionWrapper;
+let tiktokConnectionWrapper;
+let twitchConnectionWrapper;
 
 
 const app = express();
@@ -25,11 +33,11 @@ const io = new Server(httpServer, {
     }
 });
 
-this.twitchCom = new TwitchCom('./config.json', this, app, httpServer);
+const twitchCom = new TwitchCom('./config.json', app, httpServer);
 
 
 io.on('connection', (socket) => {
-    let tiktokConnectionWrapper;
+
 
     console.info('New browser-to-server connection from origin', socket.handshake.headers['origin'] || socket.handshake.headers['referer']);
 
@@ -118,39 +126,39 @@ io.on('connection', (socket) => {
 
         // Connect to the given username (uniqueId)
         try {
-            youTubeConnectionWrapper = new YouTubeConnectionWrapper(uniqueId, options, true);
-            youTubeConnectionWrapper.connect();
+            youtubeConnectionWrapper = new YouTubeConnectionWrapper(uniqueId, options, true);
+            youtubeConnectionWrapper.connect();
         } catch (err) {
             socket.emit('youTubeDisconnected', err.toString());
-            if (youTubeConnectionWrapper) {
-                youTubeConnectionWrapper.disconnect();
+            if (youtubeConnectionWrapper) {
+                youtubeConnectionWrapper.disconnect();
             }
             return;
         }
 
         // Redirect wrapper control events once
-        youTubeConnectionWrapper.once('connected', state => socket.emit('youTubeConnected', state));
-        youTubeConnectionWrapper.once('disconnected', reason => socket.emit('youTubeDisconnected', reason));
+        youtubeConnectionWrapper.once('connected', state => socket.emit('youTubeConnected', state));
+        youtubeConnectionWrapper.once('disconnected', reason => socket.emit('youTubeDisconnected', reason));
 
         // Notify client when stream ends
-        youTubeConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
+        youtubeConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
 
         // Redirect message events
-        youTubeConnectionWrapper.connection.on('roomUser', msg => socket.emit('roomUser', msg));
-        youTubeConnectionWrapper.connection.on('member', msg => socket.emit('member', msg));
-        youTubeConnectionWrapper.connection.on(youtubeConstants.events.chat, msg => 
+        youtubeConnectionWrapper.connection.on('roomUser', msg => socket.emit('roomUser', msg));
+        youtubeConnectionWrapper.connection.on('member', msg => socket.emit('member', msg));
+        youtubeConnectionWrapper.connection.on(youtubeConstants.events.chat, msg => 
             socket.emit(clientConstants.events.chat, msg)
         );
-        youTubeConnectionWrapper.connection.on('gift', msg => socket.emit('gift', msg));
-        youTubeConnectionWrapper.connection.on('social', msg => socket.emit('social', msg));
-        youTubeConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
-        youTubeConnectionWrapper.connection.on('questionNew', msg => socket.emit('questionNew', msg));
-        youTubeConnectionWrapper.connection.on('linkMicBattle', msg => socket.emit('linkMicBattle', msg));
-        youTubeConnectionWrapper.connection.on('linkMicArmies', msg => socket.emit('linkMicArmies', msg));
-        youTubeConnectionWrapper.connection.on('liveIntro', msg => socket.emit('liveIntro', msg));
-        youTubeConnectionWrapper.connection.on('emote', msg => socket.emit('emote', msg));
-        youTubeConnectionWrapper.connection.on('envelope', msg => socket.emit('envelope', msg));
-        youTubeConnectionWrapper.connection.on('subscribe', msg => socket.emit('subscribe', msg));
+        youtubeConnectionWrapper.connection.on('gift', msg => socket.emit('gift', msg));
+        youtubeConnectionWrapper.connection.on('social', msg => socket.emit('social', msg));
+        youtubeConnectionWrapper.connection.on('like', msg => socket.emit('like', msg));
+        youtubeConnectionWrapper.connection.on('questionNew', msg => socket.emit('questionNew', msg));
+        youtubeConnectionWrapper.connection.on('linkMicBattle', msg => socket.emit('linkMicBattle', msg));
+        youtubeConnectionWrapper.connection.on('linkMicArmies', msg => socket.emit('linkMicArmies', msg));
+        youtubeConnectionWrapper.connection.on('liveIntro', msg => socket.emit('liveIntro', msg));
+        youtubeConnectionWrapper.connection.on('emote', msg => socket.emit('emote', msg));
+        youtubeConnectionWrapper.connection.on('envelope', msg => socket.emit('envelope', msg));
+        youtubeConnectionWrapper.connection.on('subscribe', msg => socket.emit('subscribe', msg));
     });
 
     socket.on(twitchConstants.events.setUniqueId, () => {
@@ -164,7 +172,7 @@ io.on('connection', (socket) => {
         //     return;
         // }
 
-        this.twitchCom.connect();
+        twitchCom.connect();
 
         // // Connect to the given username (uniqueId)
         // try {
@@ -181,7 +189,7 @@ io.on('connection', (socket) => {
 
         // // Notify client when stream ends
         // twitchConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
-        this.twitchCom.on(twitchConstants.events.chat, msg => {5
+        twitchCom.on(twitchConstants.events.chat, msg => {5
             socket.emit(clientConstants.events.chat, msg)
         });
 
@@ -207,12 +215,12 @@ io.on('connection', (socket) => {
 
 // Emit global connection statistics
 setInterval(() => {
-    io.emit('statistic', { globalConnectionCount: getGlobalConnectionCount() });
-    io.emit('statistic', { twitchGlobalConnectionCount: getYouTubeGlobalConnectionCount() });
+    io.emit('statistic', { tiktokConnectionCount: getTiktokConnectionCount() });
+    io.emit('statistic', { twitchConnectionCount: getTwitchConnectionCount() });
 }, 5000)
 
 // Serve frontend files
-app.use(express.static('public'));
+app.use(expressStatic('public'));
 
 // Start http listener
 const port = process.env.PORT || 8081;

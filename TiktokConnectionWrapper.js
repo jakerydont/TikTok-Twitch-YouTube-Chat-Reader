@@ -1,6 +1,8 @@
-const { BaseConnectionWrapper, getGlobalConnectionCount } = require('./BaseConnectionWrapper');
-const { WebcastPushConnection } = require('tiktok-live-connector');
-const Constants = require('./constants').tiktok;
+import BaseConnectionWrapper from './BaseConnectionWrapper.js';
+import { WebcastPushConnection } from 'tiktok-live-connector';
+import { tiktok as Constants } from './constants.js';
+
+let tiktokConnectionCount = 0;
 
 class TikTokConnectionWrapper extends BaseConnectionWrapper {
     constructor(uniqueId, options, enableLog) {
@@ -14,7 +16,7 @@ class TikTokConnectionWrapper extends BaseConnectionWrapper {
         });
 
         this.connection.on(Constants.events.disconnected, () => {
-            globalConnectionCount -= 1;
+            tiktokConnectionCount -= 1;
             this.log(`${Constants.logPrefix}connection disconnected`);
             this.scheduleReconnect();
         });
@@ -29,7 +31,7 @@ class TikTokConnectionWrapper extends BaseConnectionWrapper {
         this.connection.connect().then((state) => {
             this.log(`${Constants.logPrefix}${isReconnect ? 'Reconnected' : 'Connected'} to roomId ${state.roomId}, websocket: ${state.upgradedToWebsocket}`);
 
-            globalConnectionCount += 1;
+            tiktokConnectionCount += 1;
 
             // Reset reconnect vars
             this.reconnectCount = 0;
@@ -60,7 +62,5 @@ class TikTokConnectionWrapper extends BaseConnectionWrapper {
     }
 }
 
-module.exports = {
-    TikTokConnectionWrapper,
-    getGlobalConnectionCount
-};
+export default TikTokConnectionWrapper;
+export const getTiktokConnectionCount = () => tiktokConnectionCount;

@@ -1,20 +1,22 @@
-const https = require('https');
-const opn = require('opn');
-const fs = require('fs');
-const { EventEmitter } = require('events');
-const path = require('path');
+import { request } from 'https';
+import opn from 'opn';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { EventEmitter } from 'events';
+import path from 'path';
 
 
-const PubSub = require("./PubSub");
-const TwitchIRC = require("./TwitchIRC");
+import PubSub from "./PubSub.js";
+import TwitchIRC from "./TwitchIRC.js";
+
+let twitchConnectionCount = 0;
 
 class TwitchCom extends EventEmitter {
-    constructor(myConfig, express, httpServer, webServer) {
+    constructor(myConfig, httpServer, webServer) {
         super();
         let config;
         if ((typeof myConfig) === 'string' ) {
-            if (fs.existsSync(myConfig)) {
-                config = JSON.parse(fs.readFileSync(myConfig).toString());
+            if (existsSync(myConfig)) {
+                config = JSON.parse(readFileSync(myConfig).toString());
             }
         }
 
@@ -23,7 +25,7 @@ class TwitchCom extends EventEmitter {
         this.reconnectCount = 0;
         this.reconnectWaitMs = 1000;
 
-        this.app = express;
+        //this.app = express;
         this.httpServer = httpServer;
         this.appClientID = config.twitch.appClientID;
         this.redirectUri = config.twitch.redirectUri;
@@ -34,8 +36,8 @@ class TwitchCom extends EventEmitter {
         this.channelName = "";
 
         this.storedAccessToken = "";
-        if (fs.existsSync("access_token.bin")) {
-            this.storedAccessToken = fs.readFileSync("access_token.bin").toString();
+        if (existsSync("access_token.bin")) {
+            this.storedAccessToken = readFileSync("access_token.bin").toString();
         }
 
         this.loginResolve = null;
@@ -119,7 +121,7 @@ class TwitchCom extends EventEmitter {
 
     setAccessToken(token) {
         this.storedAccessToken = token;
-        fs.writeFileSync("access_token.bin", this.storedAccessToken);
+        writeFileSync("access_token.bin", this.storedAccessToken);
     }
 
     validate(token) {
@@ -136,7 +138,7 @@ class TwitchCom extends EventEmitter {
                     "Authorization": "OAuth " + token
                 }
             };
-            const req = https.request(options, res => {
+            const req = request(options, res => {
                 if (res.statusCode == 401) {
                     // Invalid token
                     that.storedAccessToken = "";
@@ -214,7 +216,7 @@ class TwitchCom extends EventEmitter {
                     "Client-ID": this.appClientID
                 }
             };
-            const req = https.request(options, res => {
+            const req = request(options, res => {
                 if (res.statusCode == 401) {
                     // Invalid token
                     console.log("Failed to access API. Restart the Relay");
@@ -265,7 +267,7 @@ class TwitchCom extends EventEmitter {
                 path: path,
                 method: "GET"
             };
-            const req = https.request(options, res => {
+            const req = request(options, res => {
                 if (res.statusCode == 401) {
                     // Invalid token
                     console.log("Failed to access API");
@@ -338,4 +340,7 @@ class TwitchCom extends EventEmitter {
     }
 }
 
-module.exports = TwitchCom;
+export default TwitchCom;
+export const getTwitchConnectionCount = () => {
+    return twitchConnectionCount;
+}

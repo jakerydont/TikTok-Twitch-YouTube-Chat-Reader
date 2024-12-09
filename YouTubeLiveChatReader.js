@@ -1,7 +1,9 @@
-const secret = require('./youtube-secret.json');
-const { EventEmitter } = require('events');
-const Constants = require('./constants.js');
-const youtubeConstants = Constants.youtube;
+import youtubeSecret from './youtube-secret.json' assert { type: 'json' };
+const apiKey = youtubeSecret.apiKey;
+
+import { EventEmitter } from 'events';
+import { youtube } from './constants.js';
+const youtubeConstants = youtube;
 const source = "youtube";
 const ControlEvents = {
   CONNECTED: 'connected',
@@ -34,7 +36,7 @@ class YouTubeLiveChatReader extends EventEmitter {
     }
 
 
-    if (secret.apiKey == 'YourAPIKey') {
+    if (apiKey == 'YourAPIKey') {
       console.error('YouTube: Seems you haven\'t supplied your API Key yet!');
       this.emit(ControlEvents.DISCONNECTED);
       return;
@@ -79,7 +81,7 @@ class YouTubeLiveChatReader extends EventEmitter {
     let error;
     try {
       var res = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${channelName}&key=${secret.apiKey}`
+        `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${channelName}&key=${apiKey}`
       );
 
       var data = await res.json();
@@ -106,7 +108,7 @@ class YouTubeLiveChatReader extends EventEmitter {
     let error;
     try {
       var res = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&channelId=${channelId}&key=${secret.apiKey}`
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&channelId=${channelId}&key=${apiKey}`
       );
       var data = await res.json();
 
@@ -133,7 +135,7 @@ class YouTubeLiveChatReader extends EventEmitter {
     let error;
     try {
       var res = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${userId}&key=${secret.apiKey}`
+        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${userId}&key=${apiKey}`
       );
 
       var data = await res.json();
@@ -162,7 +164,7 @@ class YouTubeLiveChatReader extends EventEmitter {
     let error;
     try {
       var res = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&key=${secret.apiKey}&id=${id}`
+        `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&key=${apiKey}&id=${id}`
       );
 
       var data = await res.json();
@@ -189,7 +191,7 @@ class YouTubeLiveChatReader extends EventEmitter {
     let error;
     try {
       var res = await fetch(
-        `https://www.googleapis.com/youtube/v3/liveChat/messages?part=id%2C%20snippet&key=${secret.apiKey}&liveChatId=${this.chatId}`
+        `https://www.googleapis.com/youtube/v3/liveChat/messages?part=id%2C%20snippet&key=${apiKey}&liveChatId=${this.chatId}`
       );
 
       var data = await res.json();
@@ -243,4 +245,4 @@ class YouTubeLiveChatReader extends EventEmitter {
 
 }
 
-module.exports = YouTubeLiveChatReader;
+export default YouTubeLiveChatReader;

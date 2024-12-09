@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
+import { readFile, writeFile } from 'fs';
+import { join } from 'path';
 
-const inputFilePath = path.join(__dirname, 'constants.js');
-const outputFilePath = path.join(__dirname, 'public', 'constants.js');
+const inputFilePath = join(__dirname, 'constants.js');
+const outputFilePath = join(__dirname, 'public', 'constants.js');
 
-fs.readFile(inputFilePath, 'utf8', (err, data) => {
+readFile(inputFilePath, 'utf8', (err, data) => {
     if (err) {
         console.error('Error reading the input file:', err);
         return;
@@ -12,7 +12,7 @@ fs.readFile(inputFilePath, 'utf8', (err, data) => {
 
     const transpiledData = data.replace('export default Constants', 'module.exports = Constants');
 
-    fs.writeFile(outputFilePath, transpiledData, 'utf8', (err) => {
+    writeFile(outputFilePath, transpiledData, 'utf8', (err) => {
         if (err) {
             console.error('Error writing the output file:', err);
             return;

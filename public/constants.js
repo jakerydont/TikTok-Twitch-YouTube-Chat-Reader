@@ -28,4 +28,5 @@ const Constants = {
         sourceIcon: 'tiktokIcon.png'
     },
 };
-module.exports = Constants;
+export default Constants;
+export const { twitch: twitchConstants, youtube: youtubeConstants, client: clientConstants, tiktok: tiktokConstants } = Constants;

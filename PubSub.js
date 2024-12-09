@@ -1,7 +1,10 @@
-const WebSocketClient = require("websocket").client;
-const fs = require("fs");
-const Constants = require('./constants');
-const twitchConstants = Constants.twitch;
+import pkg from 'websocket';
+const { client: WebSocketClient } = pkg;
+
+//import { client as WebSocketClient } from "websocket";
+import { appendFile } from "fs";
+import { twitch } from './constants.js';
+const twitchConstants = twitch;
 
 class PubSub {
     constructor(config, auth_token, channelID, twitchCom) {
@@ -50,7 +53,7 @@ class PubSub {
                     let topic = resData.data.topic;
                     let topicData = JSON.parse(resData.data.message);
 
-                    fs.appendFile('log.txt', topic + "\n" + JSON.stringify(topicData) + "\n", function (err) {
+                    appendFile('log.txt', topic + "\n" + JSON.stringify(topicData) + "\n", function (err) {
 
                     });
 
@@ -223,4 +226,4 @@ class PubSub {
     }
 }
 
-module.exports = PubSub;
+export default PubSub;

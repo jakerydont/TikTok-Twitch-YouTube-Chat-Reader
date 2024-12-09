@@ -1,4 +1,5 @@
-const { EventEmitter } = require('events');
+import { EventEmitter } from 'events';
+import Abstractions from './Abstractions.js';
 
 let globalConnectionCount = 0;
 
@@ -30,7 +31,7 @@ class BaseConnectionWrapper extends EventEmitter {
 
         this.log(`Try reconnect in ${this.reconnectWaitMs}ms`);
 
-        setTimeout(() => {
+        Abstractions.setTimeoutWrapper(() => {
             if (!this.reconnectEnabled || this.reconnectCount >= this.maxReconnectAttempts) {
                 return;
             }
@@ -41,6 +42,8 @@ class BaseConnectionWrapper extends EventEmitter {
 
         }, this.reconnectWaitMs);
     }
+
+
 
     disconnect() {
         this.log(`Client connection disconnected`);
@@ -60,9 +63,7 @@ class BaseConnectionWrapper extends EventEmitter {
     }
 }
 
-module.exports = {
-    BaseConnectionWrapper,
-    getGlobalConnectionCount: () => {
-        return globalConnectionCount;
-    }
+export default BaseConnectionWrapper;
+export const getConnectionCount = () => {
+    return globalConnectionCount;
 };

@@ -21,7 +21,10 @@ const Constants = {
             connectedForNotifyClient: 'youtubeConnected',
             disconnectedForNotifyClient: 'youtubeDisconnected',
             connected: 'youtubeConnected',
-            setUniqueId: 'setYouTubeLiveVideoId'
+            setUniqueId: 'setYouTubeLiveVideoId',
+            streamEnd: 'streamEnd',
+            disconnect: 'disconnected',
+            error: 'error'
         },
         sourceIcon: 'youtubeIcon.png'
     },
@@ -30,6 +33,7 @@ const Constants = {
         events: {
             connectedForNotifyClient: 'tiktokConnected',
             disconnectedForNotifyClient: 'tiktokDisconnected',
+            setUniqueId: 'setUniqueId',
             // these event names are hard-coded in the tiktok-live-connector library
             // and cannot be customized
             connected: 'connected',
@@ -44,4 +48,5 @@ const Constants = {
         sourceIcon: 'tiktokIcon.png'
     },
 };
-module.exports = Constants;
+export default Constants;
+export const { client, twitch, youtube, tiktok } = Constants;

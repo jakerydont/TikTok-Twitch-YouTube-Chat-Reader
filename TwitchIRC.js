@@ -1,5 +1,5 @@
-const tmi = require('tmi.js');
-const constants = require('./constants');
+import { client } from 'tmi.js';
+import { twitch } from './constants.js';
 
 class TwitchIRC {
     constructor(config, authToken, channelName, twitchCom) {
@@ -13,7 +13,7 @@ class TwitchIRC {
 
         this.usersInChat = [];
 
-        this.client = new tmi.client({
+        this.client = new client({
             connection: {
                 reconnect: true
             },
@@ -29,9 +29,9 @@ class TwitchIRC {
         this.client.on('message', (target, context, msg, self) => {
             if (self) return;
             console.log(msg);
-            that.twitchCom.emit(constants.twitch.events.chat, {
-                source: constants.twitch.source,
-                sourceIcon: constants.twitch.sourceIcon,
+            that.twitchCom.emit(twitch.events.chat, {
+                source: twitch.source,
+                sourceIcon: twitch.sourceIcon,
 
                 authorChannelName: context["display-name"],
                 authorChannelId: '',
@@ -70,4 +70,4 @@ class TwitchIRC {
     }
 }
 
-module.exports = TwitchIRC;
+export default TwitchIRC;

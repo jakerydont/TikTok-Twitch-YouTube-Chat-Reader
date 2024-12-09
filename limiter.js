@@ -7,7 +7,7 @@ setInterval(() => {
     ipRequestCounts = {};
 }, 60 * 1000)
 
-function clientBlocked(io, currentSocket) {
+const clientBlocked = function clientBlocked(io, currentSocket) {
     let ipCounts = getOverallIpConnectionCounts(io);
     let currentIp = getSocketIp(currentSocket);
 
@@ -57,6 +57,4 @@ function getSocketIp(socket) {
     }
 }
 
-module.exports = {
-    clientBlocked
-}
+export default clientBlocked
