@@ -4,9 +4,9 @@ import Abstractions from './Abstractions.js';
 let globalConnectionCount = 0;
 
 class BaseConnectionWrapper extends EventEmitter {
-    constructor(uniqueId, options, enableLog) {
+    constructor(uniqueId, options, enableLog, constants) {
         super();
-
+        this.constants = constants;
         this.uniqueId = uniqueId;
         this.enableLog = enableLog;
 
@@ -18,13 +18,19 @@ class BaseConnectionWrapper extends EventEmitter {
         this.maxReconnectAttempts = 5;
     }
 
+    connect(reconnect = false) {
+        this.log(`${this.constants.logPrefix}Connecting... ${reconnect ? 'Reconnecting' : 'Initial connection'}`);
+        // Placeholder implementation
+        // Actual connection logic should be implemented here
+    }
+
     scheduleReconnect(reason) {
         if (!this.reconnectEnabled) {
             return;
         }
 
         if (this.reconnectCount >= this.maxReconnectAttempts) {
-            this.log(`Give up connection, max reconnect attempts exceeded`);
+            this.log(`${this.constants.logPrefix}Give up connection, max reconnect attempts exceeded`);
             this.emit('disconnected', `Connection lost. ${reason}`);
             return;
         }
@@ -46,7 +52,7 @@ class BaseConnectionWrapper extends EventEmitter {
 
 
     disconnect() {
-        this.log(`Client connection disconnected`);
+        this.log(`${this.constants.logPrefix}Client connection disconnected`);
 
         this.clientDisconnected = true;
         this.reconnectEnabled = false;
@@ -58,7 +64,7 @@ class BaseConnectionWrapper extends EventEmitter {
 
     log(logString) {
         if (this.enableLog) {
-            console.log(`WRAPPER @${this.uniqueId}: ${logString}`);
+            console.log(`${this.constants.logPrefix} WRAPPER @${this.uniqueId}: ${logString}`);
         }
     }
 }
