@@ -1,5 +1,7 @@
 const Abstractions = {
-    setTimeoutWrapper: (callback, delay) =>  setTimeout(callback, delay)
+    setTimeoutWrapper: (callback, delay) => {
+        return setTimeout(callback, delay);
+    }
 }
 
 export default Abstractions;
