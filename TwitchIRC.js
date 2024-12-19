@@ -1,5 +1,5 @@
 import { client } from 'tmi.js';
-import { twitch } from './constants.js';
+import { twitchConstants } from './constants.js';
 
 class TwitchIRC {
     constructor(config, authToken, channelName, twitchCom) {
@@ -29,9 +29,9 @@ class TwitchIRC {
         this.client.on('message', (target, context, msg, self) => {
             if (self) return;
             console.log(msg);
-            that.twitchCom.emit(twitch.events.chat, {
-                source: twitch.source,
-                sourceIcon: twitch.sourceIcon,
+            that.twitchCom.emit(twitchConstants.events.chat, {
+                source: twitchConstants.source,
+                sourceIcon: twitchConstants.sourceIcon,
 
                 authorChannelName: context["display-name"],
                 authorChannelId: '',

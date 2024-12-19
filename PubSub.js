@@ -3,8 +3,8 @@ const { client: WebSocketClient } = pkg;
 
 //import { client as WebSocketClient } from "websocket";
 import { appendFile } from "fs";
-import { twitch } from './constants.js';
-const twitchConstants = twitch;
+import { twitchConstants } from './constants.js';
+
 
 class PubSub {
     constructor(config, auth_token, channelID, twitchCom) {

@@ -1,9 +1,12 @@
 import youtubeSecret from './youtube-secret.json' assert { type: 'json' };
 const apiKey = youtubeSecret.apiKey;
+if (!apiKey || apiKey === 'myApiKey') {
+  throw new Error('YouTube: API Key not found in youtube-secret.json');
+}
 
 import { EventEmitter } from 'events';
-import { youtube } from './constants.js';
-const youtubeConstants = youtube;
+import { youtubeConstants } from './constants.js';
+
 const source = "youtube";
 const ControlEvents = {
   CONNECTED: 'connected',
@@ -55,15 +58,24 @@ class YouTubeLiveChatReader extends EventEmitter {
         this.channelId = await this.getChannelId(this.channelName); 
       }//UCkb6sUirgY1GVcRQ0ZkjUFA
 
+      if (!this.channelId) {
+        throw new Error(`${youtubeConstants.logPrefix}Failed to get channel ID`);
+      }
       this.youTubeLiveVideoId = await this.getLiveVideoId(this.channelId);
     }
 
-    if (this.youTubeLiveVideoId) {
+    if (!this.youTubeLiveVideoId) {
+      throw new Error(`${youtubeConstants.logPrefix}Failed to get video ID`);
+    } else {
       this.chatId = await this.getChatId(this.youTubeLiveVideoId);
       this.pollForMessages = setInterval(() => {
-        this.getChatMessages();
+      this.getChatMessages();
       }, this.pollInterval);
       this.isConnected = true;
+    }
+
+    if (!this.isConnected) {
+      throw new Error(`${youtubeConstants.logPrefix}Failed to connect to YouTube Live Chat`);
     }
     return {
       "youTubeLiveVideoId": this.youTubeLiveVideoId,

@@ -29,4 +29,9 @@ const Constants = {
     },
 };
 export default Constants;
-export const { twitch: twitchConstants, youtube: youtubeConstants, client: clientConstants, tiktok: tiktokConstants } = Constants;
+export const { 
+    twitch: twitchConstants, 
+    youtube: youtubeConstants, 
+    client: clientConstants, 
+    tiktok: tiktokConstants 
+} = Constants;

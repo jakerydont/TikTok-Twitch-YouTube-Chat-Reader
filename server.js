@@ -3,7 +3,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 require('dotenv').config();
-import { client, twitch, youtube, tiktok } from './constants.js';
+import { clientConstants, twitchConstants, youtubeConstants, tiktokConstants } from './constants.js';
 import express, { static as expressStatic } from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -13,10 +13,6 @@ import clientBlocked from './limiter.js';
 import TwitchCom, {getTwitchConnectionCount} from './TwitchCom.js';
 
 
-const clientConstants = client;
-const twitchConstants = twitch;
-const youtubeConstants = youtube;
-const tiktokConstants = tiktok;
 
 let youtubeConnectionWrapper;
 let tiktokConnectionWrapper;
@@ -65,7 +61,7 @@ io.on('connection', (socket) => {
 
         // Connect to the given username (uniqueId)
         try {
-            tiktokConnectionWrapper = new TikTokConnectionWrapper(uniqueId, options, true);
+            tiktokConnectionWrapper = new TikTokConnectionWrapper(uniqueId, options, true, tiktokConstants);
             tiktokConnectionWrapper.connect();
         } catch (err) {
             socket.emit(tiktokConstants.events.disconnected, err.toString());
@@ -126,7 +122,7 @@ io.on('connection', (socket) => {
 
         // Connect to the given username (uniqueId)
         try {
-            youtubeConnectionWrapper = new YouTubeConnectionWrapper(uniqueId, options, true);
+            youtubeConnectionWrapper = new YouTubeConnectionWrapper(uniqueId, options, true, youtubeConstants);
             youtubeConnectionWrapper.connect();
         } catch (err) {
             socket.emit('youTubeDisconnected', err.toString());
@@ -189,7 +185,7 @@ io.on('connection', (socket) => {
 
         // // Notify client when stream ends
         // twitchConnectionWrapper.connection.on('streamEnd', () => socket.emit('streamEnd'));
-        twitchCom.on(twitchConstants.events.chat, msg => {5
+        twitchCom.on(twitchConstants.events.chat, msg => {
             socket.emit(clientConstants.events.chat, msg)
         });
 

@@ -1,34 +1,35 @@
 import BaseConnectionWrapper  from './BaseConnectionWrapper.js';
 import YoutubeLiveChatReader from './YouTubeLiveChatReader.js';
-import { youtube as Constants } from './constants.js';
+import { youtubeConstants } from './constants.js';
 
 
 let youTubeConnectionCount = 0;
 class YouTubeConnectionWrapper extends BaseConnectionWrapper {
     constructor(youTubeLiveVideoId, options, enableLog) {
-        super(youTubeLiveVideoId, options, enableLog);
+        super(youTubeLiveVideoId, options, enableLog, youtubeConstants);
 
         this.connection = new YoutubeLiveChatReader(youTubeLiveVideoId, options);
 
-        this.connection.on(Constants.events.streamEnd, () => {
-            this.log(`${Constants.logPrefix}streamEnd event received, giving up connection`);
+        this.connection.on(youtubeConstants.events.streamEnd, () => {
+            this.log(`${youtubeConstants.logPrefix}streamEnd event received, giving up connection`);
             this.reconnectEnabled = false;
         });
 
-        this.connection.on(Constants.events.disconnect, () => {
+        this.connection.on(youtubeConstants.events.disconnect, () => {
             youTubeConnectionCount -= 1;
-            this.log(`${Constants.logPrefix}YouTube connection disconnected`);
+            this.log(`${youtubeConstants.logPrefix}YouTube connection disconnected`);
             this.scheduleReconnect();
         });
 
-        this.connection.on(Constants.events.error, (err) => {
-            this.log(`${Constants.logPrefix}Error event triggered: ${err.info}, ${err.exception}`);
+        this.connection.on(youtubeConstants.events.error, (err) => {
+            this.log(`${youtubeConstants.logPrefix}Error event triggered: ${err.info}, ${err.exception}`);
             console.error(err);
         });
     }
 
     connect(isReconnect) {
         this.connection.connect().then((state) => {
+           
             this.log(`${isReconnect ? 'Reconnected' : 'Connected'} to roomId ${state.roomId}, websocket: ${state.upgradedToWebsocket}`);
 
             youTubeConnectionCount += 1;
@@ -45,7 +46,7 @@ class YouTubeConnectionWrapper extends BaseConnectionWrapper {
 
             // Notify client
             if (!isReconnect) {
-                this.emit(Constants.events.connectedForNotifyClient, state);
+                this.emit(youtubeConstants.events.connectedForNotifyClient, state);
             }
 
         }).catch((err) => {
@@ -56,7 +57,7 @@ class YouTubeConnectionWrapper extends BaseConnectionWrapper {
                 this.scheduleReconnect(err);
             } else {
                 // Notify client
-                this.emit(Constants.events.disconnectedForNotifyClient, err.toString());
+                this.emit(youtubeConstants.events.disconnectedForNotifyClient, err.toString());
             }
         });
     }
